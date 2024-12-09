@@ -30,6 +30,8 @@
 #define inline_hack
 #endif
 
+uint16_t PLTTconverted[PLTT_SIZE/2];
+
 extern void (*const gIntrTable[])(void);
 
 struct scanlineData {
@@ -145,7 +147,7 @@ static void RenderBGScanlineWinBlend(int bgNum, uint16_t control, uint16_t hoffs
     //return;
     
     uint8_t *bgtiles = (uint8_t *)BG_CHAR_ADDR(charBaseBlock);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
      
     if (control & BGCNT_MOSAIC)
         lineNum = applyBGVerticalMosaicEffect(lineNum);
@@ -395,7 +397,7 @@ static void RenderBGScanlineWin(int bgNum, uint16_t control, uint16_t hoffs, uin
     //return;
     
     uint8_t *bgtiles = (uint8_t *)BG_CHAR_ADDR(charBaseBlock);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
      
     if (control & BGCNT_MOSAIC)
         lineNum = applyBGVerticalMosaicEffect(lineNum);
@@ -630,7 +632,7 @@ static void RenderBGScanlineBlend(int bgNum, uint16_t control, uint16_t hoffs, u
     }
     
     uint8_t *bgtiles = (uint8_t *)BG_CHAR_ADDR(charBaseBlock);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
      
     if (control & BGCNT_MOSAIC)
         lineNum = applyBGVerticalMosaicEffect(lineNum);
@@ -870,7 +872,7 @@ static void RenderBGScanlineNoEffect(int bgNum, uint16_t control, uint16_t hoffs
     }
     
     uint8_t *bgtiles = (uint8_t *)BG_CHAR_ADDR(charBaseBlock);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
      
     if (control & BGCNT_MOSAIC)
         lineNum = applyBGVerticalMosaicEffect(lineNum);
@@ -1160,7 +1162,7 @@ static void RenderRotScaleBGScanlineWinBlend(int bgNum, uint16_t control, uint16
 
     uint8_t *bgtiles = (uint8_t *)(VRAM_ + charBaseBlock * 0x4000);
     uint8_t *bgmap = (uint8_t *)(VRAM_ + screenBaseBlock * 0x800);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
     uint8_t blendMode = (REG_BLDCNT >> 6) & 3;
     uint16_t* mask = scanline->bgMask;
 
@@ -1303,7 +1305,7 @@ static void RenderRotScaleBGScanlineWin(int bgNum, uint16_t control, uint16_t x,
 
     uint8_t *bgtiles = (uint8_t *)(VRAM_ + charBaseBlock * 0x4000);
     uint8_t *bgmap = (uint8_t *)(VRAM_ + screenBaseBlock * 0x800);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
     uint16_t* mask = scanline->bgMask;
 
     if (control & BGCNT_MOSAIC)
@@ -1429,7 +1431,7 @@ static void RenderRotScaleBGScanlineBlend(int bgNum, uint16_t control, uint16_t 
 
     uint8_t *bgtiles = (uint8_t *)(VRAM_ + charBaseBlock * 0x4000);
     uint8_t *bgmap = (uint8_t *)(VRAM_ + screenBaseBlock * 0x800);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
     uint8_t blendMode = (REG_BLDCNT >> 6) & 3;
     uint16_t* mask = scanline->bgMask;
     
@@ -1572,7 +1574,7 @@ static void RenderRotScaleBGScanlineNoEffect(int bgNum, uint16_t control, uint16
 
     uint8_t *bgtiles = (uint8_t *)(VRAM_ + charBaseBlock * 0x4000);
     uint8_t *bgmap = (uint8_t *)(VRAM_ + screenBaseBlock * 0x800);
-    uint16_t *pal = (uint16_t *)PLTT;
+    uint16_t *pal = (uint16_t *)PLTTconverted;
     
     if (windowsEnabled)
     {
@@ -1801,7 +1803,7 @@ static void DrawSpritesWinMask(struct scanlineData* scanline, uint16_t vcount)
             for (int local_x = -half_width; local_x <= half_width; local_x++)
             {
                 uint8_t *tiledata = (uint8_t *)objtiles;
-                uint16_t *palette = (uint16_t *)(PLTT + 0x200);
+                uint16_t *palette = (uint16_t *)(PLTTconverted + 0x200);
                 int local_mosaicX;
                 int tex_x;
                 int tex_y;
@@ -1968,7 +1970,7 @@ static void inline_hack DrawAffineSprite(int SpriteIndex, struct scanlineData* s
         for (int local_x = -half_width; local_x <= half_width; local_x++)
         {
             uint8_t *tiledata = (uint8_t *)objtiles;
-            uint16_t *palette = (uint16_t *)(PLTT + 0x200);
+            uint16_t *palette = (uint16_t *)(PLTTconverted + 0x100);
             int local_mosaicX;
             int tex_x;
             int tex_y;
@@ -2142,7 +2144,7 @@ static void inline_hack DrawNonAffineSprite(int SpriteIndex, struct scanlineData
         bool flipX  = !isAffine && ((oam->matrixNum >> 3) & 1);
         bool flipY  = !isAffine && ((oam->matrixNum >> 4) & 1);
         uint8_t *tiledata = (uint8_t *)objtiles;
-        uint16_t *palette = (uint16_t *)OBJ_PLTT;
+        uint16_t *palette = (uint16_t *)PLTTconverted + 0x100;
         palette += oam->paletteNum * 16; //choose the palette
         int tex_y = local_y + (height / 2);
         if (flipY)
@@ -2671,9 +2673,15 @@ unsigned int frameskipcounter = 0;
 void DrawFrame(uint16_t *pixels)
 {
     int i;
-    int j;
     
-    //memsetu16(pixels, *(uint16_t *)PLTT, DISPLAY_WIDTH * DISPLAY_HEIGHT);
+    uint32_t* pal32 = (uint32_t*)PLTT; //cast to 32bit so we could convert two pixels at once
+    uint32_t* pal32Dest = (uint32_t*)PLTTconverted;
+    while (pal32 != &PLTT[PLTT_SIZE])
+    {
+        uint32_t color32 = *pal32;
+        *pal32Dest = ((color32 & 0x1F001F) << 10) | (color32 & 0x83E083E0) | ((color32 & 0x7C007C00) >> 10);
+        pal32++; pal32Dest++;
+    }
 
     for (i = 0; i < DISPLAY_HEIGHT; i++)
     {
@@ -2687,7 +2695,7 @@ void DrawFrame(uint16_t *pixels)
         
         // backdrop color brightness effects
         unsigned int blendMode = (REG_BLDCNT >> 6) & 3;
-        uint16_t backdropColor = *(uint16_t *)PLTT;
+        uint16_t backdropColor = *(uint16_t *)PLTTconverted;
         if (REG_BLDCNT & BLDCNT_TGT1_BD)
         {
             switch (blendMode)
