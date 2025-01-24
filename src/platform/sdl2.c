@@ -138,12 +138,12 @@ static bool InGbaRenderMode(void)
     return gpu.displayControl & DISPCNT_GBA_MODE;
 }
 
-static s32 RealDisplayWidth(void)
+s32 RealDisplayWidth(void)
 {
     return displayWidth;
 }
 
-static s32 RealDisplayHeight(void)
+s32 RealDisplayHeight(void)
 {
     return displayHeight;
 }

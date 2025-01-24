@@ -768,17 +768,17 @@ void DoContestHallWarp(void)
 
 static void SetFlashScanlineEffectWindowBoundary(u32 *dest, u32 y, s32 left, s32 right)
 {
-    if (y <= 160)
+    if (y <= RealDisplayHeight())
     {
         if (left < 0)
             left = 0;
-        if (left > 255)
-            left = 255;
+        if (left > RealDisplayWidth())
+            left = RealDisplayWidth();
         if (right < 0)
             right = 0;
-        if (right > 255)
-            right = 255;
-        dest[y] = (left << 8) | right;
+        if (right > RealDisplayWidth())
+            right = RealDisplayWidth();
+        dest[y] = WIN_RANGE(left, right);
     }
 }
 
@@ -805,17 +805,17 @@ static void SetFlashScanlineEffectWindowBoundaries(u32 *dest, s32 centerX, s32 c
 
 static void SetOrbFlashScanlineEffectWindowBoundary(u32 *dest, u32 y, s32 left, s32 right)
 {
-    if (y <= 160)
+    if (y <= RealDisplayHeight())
     {
         if (left < 0)
             left = 0;
-        if (left > 240)
-            left = 240;
+        if (left > RealDisplayWidth())
+            left = RealDisplayWidth();
         if (right < 0)
             right = 0;
-        if (right > 240)
-            right = 240;
-        dest[y] = (left << 8) | right;
+        if (right > RealDisplayWidth())
+            right = RealDisplayWidth();
+        dest[y] = WIN_RANGE(left, right);
     }
 }
 
@@ -980,7 +980,7 @@ void AnimateFlash(u8 newFlashLevel)
     bool8 fullBrightness = FALSE;
     if (newFlashLevel == 0)
         fullBrightness = TRUE;
-    StartUpdateFlashLevelEffect(DisplayWidth() / 2, DisplayHeight() / 2, sFlashLevelToRadius[curFlashLevel], sFlashLevelToRadius[newFlashLevel], fullBrightness, 1);
+    StartUpdateFlashLevelEffect(RealDisplayWidth() / 2, RealDisplayHeight() / 2, sFlashLevelToRadius[curFlashLevel], sFlashLevelToRadius[newFlashLevel], fullBrightness, 1);
     StartWaitForFlashUpdate();
     LockPlayerFieldControls();
 }
@@ -989,14 +989,14 @@ void WriteFlashScanlineEffectBuffer(u8 flashLevel)
 {
     if (flashLevel)
     {
-        SetFlashScanlineEffectWindowBoundaries(&gScanlineEffectRegBuffers[0][0], DisplayWidth() / 2, DisplayHeight() / 2, sFlashLevelToRadius[flashLevel]);
+        SetFlashScanlineEffectWindowBoundaries(&gScanlineEffectRegBuffers[0][0], RealDisplayWidth() / 2, RealDisplayHeight() / 2, sFlashLevelToRadius[flashLevel]);
         memcpy(&gScanlineEffectRegBuffers[1], &gScanlineEffectRegBuffers[0], 960 * sizeof(u16));
     }
 }
 
 void WriteBattlePyramidViewScanlineEffectBuffer(void)
 {
-    SetFlashScanlineEffectWindowBoundaries(&gScanlineEffectRegBuffers[0][0], DisplayWidth() / 2, DisplayHeight() / 2, gSaveBlock2Ptr->frontier.pyramidLightRadius);
+    SetFlashScanlineEffectWindowBoundaries(&gScanlineEffectRegBuffers[0][0], RealDisplayWidth() / 2, RealDisplayHeight() / 2, gSaveBlock2Ptr->frontier.pyramidLightRadius);
     memcpy(&gScanlineEffectRegBuffers[1], &gScanlineEffectRegBuffers[0], 960 * sizeof(u16));
 }
 
