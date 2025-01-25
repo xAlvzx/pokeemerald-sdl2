@@ -442,16 +442,29 @@ static u8 UpdateNormalPaletteFade(void)
             paletteOffset = OBJ_PLTT_OFFSET;
         }
 
-        while (selectedPalettes)
+        //check if we are blending BGs and selected all of them
+        if (!gPaletteFade.objPaletteToggle && selectedPalettes & 0xFFFF)
         {
-            if (selectedPalettes & 1)
-                BlendPalette(
-                    paletteOffset,
-                    16,
-                    gPaletteFade.y,
-                    gPaletteFade.blendColor);
-            selectedPalettes >>= 1;
-            paletteOffset += 16;
+            //extended palette workaround: since there aren't enough bits in selectedPalettes for extpals we just have to blend all of them if all 16 are selected
+            BlendPalette(
+                paletteOffset,
+                BG_PLTT_SIZE / sizeof(u16),
+                gPaletteFade.y,
+                gPaletteFade.blendColor);
+        }
+        else
+        {
+            while (selectedPalettes)
+            {
+                if (selectedPalettes & 1)
+                    BlendPalette(
+                        paletteOffset,
+                        16,
+                        gPaletteFade.y,
+                        gPaletteFade.blendColor);
+                selectedPalettes >>= 1;
+                paletteOffset += 16;
+            }
         }
 
         gPaletteFade.objPaletteToggle ^= 1;
