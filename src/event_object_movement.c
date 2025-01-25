@@ -1622,7 +1622,7 @@ static void TrySpawnObjectEventsFromTemplates(struct ObjectEventTemplate const *
         s16 npcX = template->x + offsetX + MAP_OFFSET;
         s16 npcY = template->y + offsetY + MAP_OFFSET_Y;
 
-        if (top <= npcY && bottom >= npcY && left <= npcX && right >= npcX && !FlagGet(template->flagId))
+        if (top <= npcY && bottom >= npcY && left <= npcX && right >= npcX && npcX >= 0 && npcY >= 0 && !FlagGet(template->flagId))
             TrySpawnObjectEventTemplate(template, mapNum, mapGroup, offsetX, offsetY, cameraX, cameraY);
     }
 }
@@ -1694,10 +1694,10 @@ void TrySpawnObjectEvents(s16 cameraX, s16 cameraY)
                 continue;
             }
 
-            u8 objectCount = gSaveBlock1Ptr->connectionObjectEventCount[connection->direction - 1];
+            u8 objectCount = mapHeader->events->objectEventCount;
             if (objectCount > 0)
             {
-                struct ObjectEventTemplate const *templates = gSaveBlock1Ptr->connectionObjectEventTemplates[connection->direction - 1];
+                struct ObjectEventTemplate const *templates = mapHeader->events->objectEvents;
                 TrySpawnObjectEventsFromTemplates(templates, objectCount, connection->mapNum, connection->mapGroup, offsetX, offsetY, cameraX, cameraY);
             }
         }
