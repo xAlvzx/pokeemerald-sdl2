@@ -760,7 +760,8 @@ bool8 CameraMove(int x, int y)
         ResetFieldCamera();
         gSaveBlock1Ptr->pos.x += x;
         gSaveBlock1Ptr->pos.y += y;
-        MoveMapViewToBackup(direction);
+        //mapView gets saved and reloaded for seemingly no reason? gonna comment this out
+        //MoveMapViewToBackup(direction);
     }
     return gCamera.active;
 }
