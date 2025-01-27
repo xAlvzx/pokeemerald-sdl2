@@ -432,6 +432,8 @@ int main(int argc, char **argv)
 #endif
 
     double accumulator = 0.0;
+    double accumulator60 = 0.0;
+    bool isGameStepDrawn = false;
 
     while (isRunning)
     {
@@ -460,9 +462,11 @@ int main(int argc, char **argv)
         {
             double dt = fixedTimestep;
             double deltaTime = (double)((curGameTime - lastGameTime) / (double)SDL_GetPerformanceFrequency());
+            double deltaTime60 = deltaTime; //for code that needs to always run at 60fps
             deltaTime *= timeScale;
 
             accumulator += deltaTime;
+            accumulator60 += deltaTime60;
 
             while (accumulator >= dt)
             {
@@ -472,6 +476,7 @@ int main(int argc, char **argv)
                     SDL_AtomicSet(&isFrameAvailable, 0);
 
                     RunFrame();
+                    isGameStepDrawn = false;
 
                     SDL_SemPost(vBlankSemaphore);
 
@@ -479,19 +484,27 @@ int main(int argc, char **argv)
                 }
 #else
                 RunFrame();
+                isGameStepDrawn = false;
 
                 accumulator -= dt;
 #endif
             }
-        }
 
-        // Draws each scanline
-        RenderFrame(sdlTexture);
+            //samples per frame is 701, that gets multipled by two when being queued and then multipled by four because samples are float32 which are 4 bytes long hence the divide by 8
+            //this number is then checked against samples per frame multipled by three rounded down to 2000 to give it enough margin of error while not desyncing
+            //this is all done to sync audio to gameplay
+            if (SDL_GetQueuedAudioSize(1)/8 < 2000)
+            {
+                AudioUpdate();
+            }
 
-        if (!paused)
-        {
-            // Calls m4aSoundMain() and m4aSoundVSync()
-            AudioUpdate();
+            if (!isGameStepDrawn)
+            {
+                // Draws each scanline
+                RenderFrame(sdlTexture);
+                isGameStepDrawn = true;
+            }
+            
         }
 
         lastGameTime = curGameTime;
