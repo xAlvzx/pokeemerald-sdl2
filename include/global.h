@@ -20,6 +20,8 @@
 
 s32 DisplayWidth(void);
 s32 DisplayHeight(void);
+s32 RealDisplayWidth(void);
+s32 RealDisplayHeight(void);
 
 void EnableBorder(void);
 void DisableBorder(void);
