@@ -105,7 +105,7 @@ extern void * INTR_VECTOR;
 #define DISPLAY_TILE_HEIGHT (BASE_DISPLAY_HEIGHT / TILE_HEIGHT)
 
 // Size of different tile formats in bytes
-#define TILE_SIZE(bpp)((bpp) * TILE_WIDTH * TILE_HEIGHT / 8)
+#define TILE_SIZE(bpp) ((bpp) * TILE_WIDTH * TILE_HEIGHT / 8)
 #define TILE_SIZE_1BPP TILE_SIZE(1) // 8
 #define TILE_SIZE_4BPP TILE_SIZE(4) // 32
 #define TILE_SIZE_8BPP TILE_SIZE(8) // 64

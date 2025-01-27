@@ -4,6 +4,7 @@
 #include "cgb_audio.h"
 #include "gba/types.h"
 #include "gba/m4a_internal.h"
+#include "platform.h"
 
 #include <SDL2/SDL.h>
 
@@ -623,8 +624,7 @@ void m4aSoundVSync(void)
         for(u32 i = 0; i < samplesPerFrame; i++)
             audioBuffer[i] = m4aBuffer[i] + cgbBuffer[i];
 
-        // FIXME: don't call SDL functions here
-        SDL_QueueAudio(1, audioBuffer, samplesPerFrame * 4);
+        Platform_QueueAudio(audioBuffer, samplesPerFrame * 4);
         if((s8)(--mixer->dmaCounter) <= 0)
             mixer->dmaCounter = mixer->framesPerDmaCycle;
     }

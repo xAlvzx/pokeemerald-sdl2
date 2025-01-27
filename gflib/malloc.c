@@ -4,7 +4,7 @@
 #include <stdlib.h>
 
 #ifndef PORTABLE
-EWRAM_DATA u8 gHeap[HEAP_SIZE] = {0};
+ALIGNED(4) EWRAM_DATA u8 gHeap[HEAP_SIZE] = {0};
 #endif
 
 #define MEMDEBUG

@@ -7,6 +7,8 @@
 #define MIXER_UNLOCKED 0x68736D53
 #define MIXER_LOCKED PLAYER_UNLOCKED+1
 
+struct MP2KPlayerState;
+
 struct MixerSource {
     u8 status;
     u8 type;
@@ -86,9 +88,7 @@ struct SoundMixerState {
     u8 cgbCounter15;
     u8 framesPerDmaCycle;
     u8 maxScanlines;
-    u8 padding1;
-    u8 padding2;
-    u8 padding3;
+    u8 gap[3];
     s32 samplesPerFrame;
     s32 sampleRate;
     float sampleRateReciprocal;
@@ -101,10 +101,7 @@ struct SoundMixerState {
     void (**mp2kEventFuncTable)();
     void (*mp2kEventNxxFunc)(u8 clock, struct MP2KPlayerState *player, struct MP2KTrack *track);
     void *reserved1; // In poke* this is called "ExtVolPit"
-    void *reserved2;
-    void *reserved3;
-    void *reversed4;
-    void *reserved5;
+    u8 gap2[16];
     struct MixerSource chans[MAX_SAMPLE_CHANNELS];
     __attribute__((aligned(4))) float outBuffer[MIXED_AUDIO_BUFFER_SIZE * 2];
     //s8 outBuffer[MIXED_AUDIO_BUFFER_SIZE * 2];
@@ -112,4 +109,10 @@ struct SoundMixerState {
 
 void RunMixerFrame(void);
 
+typedef void (*MixerRamFunc)(struct SoundMixerState *, u32, u16, s8 *, u16);
+
+#ifndef NOT_GBA
+#undef REG_VCOUNT
+#define REG_VCOUNT (*(vu8*)REG_ADDR_VCOUNT)
+#endif
 #endif//SOUND_MIXER_H

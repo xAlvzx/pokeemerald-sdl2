@@ -5,9 +5,15 @@
 #include <string.h>
 #include <limits.h>
 
+
 #ifdef PORTABLE
 #include <stdlib.h>
-#endif
+#ifndef NO_STD_LIB_ENABLED
+#define DBGPRINTF(...) printf(__VA_ARGS__)
+#else
+#define DBGPRINTF(...)
+#endif //NO_STD_LIB_ENABLED
+#endif //PORTABLE
 
 #include "config.h" // we need to define config before gba headers as print stuff needs the functions nulled before defines.
 #include "gba/gba.h"
@@ -102,7 +108,7 @@ int strcmp(const char *, const char*);
 // Used in cases where division by 0 can occur in the retail version.
 // Avoids invalid opcodes on some emulators, and the otherwise UB.
 #ifdef UBFIX
-#define SAFE_DIV(a, b) ((b) ? (a) / (b) : 0)
+#define SAFE_DIV(a, b) (((b) != 0) ? (a) / (b) : 0)
 #else
 #define SAFE_DIV(a, b) ((a) / (b))
 #endif
@@ -111,7 +117,7 @@ int strcmp(const char *, const char*);
 // There are cases where GF does a&(n-1) where we would really like to have a%n, because
 // if n is changed to a value that isn't a power of 2 then a&(n-1) is unlikely to work as
 // intended, and a%n for powers of 2 isn't always optimized to use &.
-#define MOD(a, n)(((n) & ((n)-1)) ? ((a) % (n)) : ((a) & ((n)-1)))
+#define MOD(a, n) (((n) & ((n)-1)) ? ((a) % (n)) : ((a) & ((n)-1)))
 
 // Used in cases where modulo by 0 can occur in the retail version.
 // Avoids invalid opcodes on some emulators, and the otherwise UB.
@@ -182,7 +188,7 @@ int strcmp(const char *, const char*);
     f;                       \
 })
 
-#define DIV_ROUND_UP(val, roundBy)(((val) / (roundBy)) + (((val) % (roundBy)) ? 1 : 0))
+#define DIV_ROUND_UP(val, roundBy) (((val) / (roundBy)) + (((val) % (roundBy)) ? 1 : 0))
 
 #define ROUND_BITS_TO_BYTES(numBits) DIV_ROUND_UP(numBits, 8)
 
