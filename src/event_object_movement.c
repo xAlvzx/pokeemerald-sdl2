@@ -1700,10 +1700,15 @@ void TrySpawnObjectEvents(s16 cameraX, s16 cameraY)
                 continue;
             }
 
-            u8 objectCount = mapHeader->events->objectEventCount;
+            struct ConnectionObjectEventTemplate* connectionEvents = getObjectEventTemplatesFromConnection(connection->mapGroup, connection->mapNum);
+
+            if (connectionEvents == NULL)
+                continue;
+
+            u8 objectCount = connectionEvents->objectEventCount;
             if (objectCount > 0)
             {
-                struct ObjectEventTemplate const *templates = mapHeader->events->objectEvents;
+                struct ObjectEventTemplate const *templates = connectionEvents->objectEventTemplates;
                 TrySpawnObjectEventsFromTemplates(templates, objectCount, connection->mapNum, connection->mapGroup, offsetX, offsetY, cameraX, cameraY);
             }
         }

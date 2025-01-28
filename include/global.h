@@ -1033,6 +1033,14 @@ struct ExternalEventFlags
 
 } __attribute__((packed));/*size = 0x15*/
 
+struct ConnectionObjectEventTemplate
+{
+    u8 mapGroup;
+    u8 mapNum;
+    u8 objectEventCount;
+    struct ObjectEventTemplate objectEventTemplates[OBJECT_EVENT_TEMPLATES_COUNT];
+};
+
 struct SaveBlock1
 {
     /*0x00*/ struct Coords16 pos;
@@ -1069,8 +1077,8 @@ struct SaveBlock1
     /*0xA2E*/ //u8 padding3[2];
     /*0xA30*/ struct ObjectEvent objectEvents[OBJECT_EVENTS_COUNT];
     /*0xC70*/ struct ObjectEventTemplate objectEventTemplates[OBJECT_EVENT_TEMPLATES_COUNT];
-              struct ObjectEventTemplate connectionObjectEventTemplates[4][OBJECT_EVENT_TEMPLATES_COUNT];
-              u8 connectionObjectEventCount[4];
+              struct ConnectionObjectEventTemplate connectionObjectEventTemplates[OBJECT_EVENT_CONNECTION_TEMPLATES_COUNT];
+              u8 connectionObjectEventCount;
     /*0x1270*/ u8 flags[NUM_FLAG_BYTES];
     /*0x139C*/ u16 vars[VARS_COUNT];
     /*0x159C*/ u32 gameStats[NUM_GAME_STATS];

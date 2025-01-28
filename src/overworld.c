@@ -473,12 +473,52 @@ void ApplyNewEncryptionKeyToGameStats(u32 newKey)
         ApplyNewEncryptionKeyToWord(&gSaveBlock1Ptr->gameStats[i], newKey);
 }
 
+bool8 addObjectEventTemplatesToConnection(u8 mapGroup, u8 mapNum, struct ObjectEventTemplate* objectEvents, u8 objectEventCount)
+{
+    u8 count = gSaveBlock1Ptr->connectionObjectEventCount;
+
+    //Check if we have maximum amount of connection event templates loaded and if so fail
+    if (count >= OBJECT_EVENT_CONNECTION_TEMPLATES_COUNT)
+        return FALSE;
+
+    struct ConnectionObjectEventTemplate* connectionEventTemplate = &gSaveBlock1Ptr->connectionObjectEventTemplates[count];
+
+    CpuCopy32(objectEvents,
+          connectionEventTemplate->objectEventTemplates,
+          objectEventCount * sizeof(struct ObjectEventTemplate));
+
+    connectionEventTemplate->mapGroup = mapGroup;
+    connectionEventTemplate->mapNum = mapNum;
+    connectionEventTemplate->objectEventCount = objectEventCount;
+
+    gSaveBlock1Ptr->connectionObjectEventCount++;
+
+    return TRUE;
+}
+
+struct ConnectionObjectEventTemplate* getObjectEventTemplatesFromConnection(u8 mapGroup, u8 mapNum)
+{
+    u8 count = gSaveBlock1Ptr->connectionObjectEventCount;
+
+    //Find object event templates for connection with matching group and num
+    for (int i = 0; i < count; i++)
+    {
+        struct ConnectionObjectEventTemplate* connectionEventTemplate = &gSaveBlock1Ptr->connectionObjectEventTemplates[i];
+        if (connectionEventTemplate->mapGroup == mapGroup && connectionEventTemplate->mapNum == mapNum)
+        {
+            return connectionEventTemplate;
+        }
+    }
+    //No connections found
+    return NULL;
+}
+
 void LoadObjEventTemplatesFromHeader(void)
 {
     // Clear map object templates
     CpuFill32(0, gSaveBlock1Ptr->objectEventTemplates, sizeof(gSaveBlock1Ptr->objectEventTemplates));
     CpuFill32(0, gSaveBlock1Ptr->connectionObjectEventTemplates, sizeof(gSaveBlock1Ptr->connectionObjectEventTemplates));
-    CpuFill32(0, gSaveBlock1Ptr->connectionObjectEventCount, sizeof(gSaveBlock1Ptr->connectionObjectEventCount));
+    gSaveBlock1Ptr->connectionObjectEventCount = 0;
 
     // Copy map header events to save block
     CpuCopy32(gMapHeader.events->objectEvents,
@@ -510,11 +550,7 @@ void LoadObjEventTemplatesFromHeader(void)
         }
 
         // Copy connection events to save block
-        CpuCopy32(events->objectEvents,
-              gSaveBlock1Ptr->connectionObjectEventTemplates[i],
-              events->objectEventCount * sizeof(struct ObjectEventTemplate));
-
-        gSaveBlock1Ptr->connectionObjectEventCount[i] = events->objectEventCount;
+        addObjectEventTemplatesToConnection(connection->mapGroup, connection->mapNum, events->objectEvents, events->objectEventCount);
     }
 }
 
@@ -824,7 +860,10 @@ struct ObjectEventTemplate *GetObjectEventTemplatesForLocation(struct WarpData *
         if (connection != NULL
         && location->mapNum == connection->mapNum
         && location->mapGroup == connection->mapGroup)
-            return gSaveBlock1Ptr->connectionObjectEventTemplates[i];
+        {
+            struct ConnectionObjectEventTemplate* connectionEvents = getObjectEventTemplatesFromConnection(connection->mapGroup, connection->mapNum);
+            return connectionEvents ? connectionEvents->objectEventTemplates : NULL;
+        }
     }
 
     return NULL;

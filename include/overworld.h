@@ -66,6 +66,7 @@ void IncrementGameStat(u8 index);
 u32 GetGameStat(u8 index);
 void SetGameStat(u8 index, u32 value);
 void ApplyNewEncryptionKeyToGameStats(u32 newKey);
+struct ConnectionObjectEventTemplate* getObjectEventTemplatesFromConnection(u8 mapGroup, u8 mapNum);
 void LoadObjEventTemplatesFromHeader(void);
 void LoadSaveblockObjEventScripts(void);
 bool8 SetObjEventTemplateCoords(struct ObjectEventTemplate *savObjTemplates, u8 localId, s16 x, s16 y);
