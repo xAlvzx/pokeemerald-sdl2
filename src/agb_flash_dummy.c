@@ -20,10 +20,10 @@ const struct FlashSetupInfo DUMMY_SAVE =
     WaitForFlashWrite_DUMMY,
     dummyMaxTime,
     {
-        131072, // ROM size
+        131072*4, // ROM size
         {
-            4096, // sector size
-              12, // bit shift to multiply by sector size (4096 == 1 << 12)
+            4096*4, // sector size
+              14, // bit shift to multiply by sector size (16384 == 1 << 14)
               32, // number of sectors
                0  // appears to be unused
         },
@@ -46,19 +46,19 @@ u16 EraseFlashChip_DUMMY(void)
 
 u16 EraseFlashSector_DUMMY(u16 sectorNum)
 {
-    u8 clearBuffer[0x1000] = { 0xFF };
+    u8 clearBuffer[0x1000*4] = { 0xFF };
     return ProgramFlashSector_DUMMY(sectorNum, &clearBuffer[0]);
 }
 
 u16 ProgramFlashByte_DUMMY(u16 sectorNum, u32 offset, u8 data)
 {
-    FLASH_BASE[(sectorNum << gFlash->sector.shift) + offset] = data;
+    FLASH_BASE[((u32)sectorNum << gFlash->sector.shift) + offset] = data;
     return 0;
 }
 
 
 u16 ProgramFlashSector_DUMMY(u16 sectorNum, u8 *src)
 {
-    memcpy(&FLASH_BASE[sectorNum << gFlash->sector.shift], src, 0x1000);
+    memcpy(&FLASH_BASE[(u32)sectorNum << gFlash->sector.shift], src, 0x1000*4);
     return 0;
 }

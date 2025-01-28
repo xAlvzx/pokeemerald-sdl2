@@ -52,8 +52,8 @@ static u8 HandleReplaceSector(u16, const struct SaveSectorLocation *);
 
 struct
 {
-    u16 offset;
-    u16 size;
+    u32 offset;
+    u32 size;
 } static const sSaveSlotLayout[NUM_SECTORS_PER_SLOT] =
 {
     SAVEBLOCK_CHUNK(struct SaveBlock2, 0), // SECTOR_ID_SAVEBLOCK2
@@ -77,11 +77,9 @@ struct
 // These will produce an error if a save struct is larger than the space
 // alloted for it in the flash.
 // FIXME: This is disabled for now so that the code compiles. The save data code needs to be redone.
-#if 0
 STATIC_ASSERT(sizeof(struct SaveBlock2) <= SECTOR_DATA_SIZE, SaveBlock2FreeSpace);
 STATIC_ASSERT(sizeof(struct SaveBlock1) <= SECTOR_DATA_SIZE * (SECTOR_ID_SAVEBLOCK1_END - SECTOR_ID_SAVEBLOCK1_START + 1), SaveBlock1FreeSpace);
 STATIC_ASSERT(sizeof(struct PokemonStorage) <= SECTOR_DATA_SIZE * (SECTOR_ID_PKMN_STORAGE_END - SECTOR_ID_PKMN_STORAGE_START + 1), PokemonStorageFreeSpace);
-#endif
 
 u16 gLastWrittenSector;
 u32 gLastSaveCounter;
@@ -180,10 +178,10 @@ static u8 WriteSaveSectorOrSlot(u16 sectorId, const struct SaveSectorLocation *l
 
 static u8 HandleWriteSector(u16 sectorId, const struct SaveSectorLocation *locations)
 {
-    u16 i;
+    u32 i;
     u16 sector;
     u8 *data;
-    u16 size;
+    u32 size;
 
     // Adjust sector id for current save slot
     sector = sectorId + gLastWrittenSector;
