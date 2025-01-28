@@ -513,7 +513,7 @@ void SaveMapView(void)
 {
     int i, j;
     int x, y;
-    u16 *mapView;
+    u32 *mapView;
     int width;
     mapView = gSaveBlock1Ptr->mapView;
     width = gBackupMapLayout.width;
@@ -558,7 +558,7 @@ static void LoadSavedMapView(void)
     u8 yMode;
     int i, j;
     int x, y;
-    u16 *mapView;
+    u32 *mapView;
     int width;
     mapView = gSaveBlock1Ptr->mapView;
     if (!SavedMapViewIsEmpty())
@@ -597,7 +597,7 @@ static void LoadSavedMapView(void)
 static void MoveMapViewToBackup(u8 direction)
 {
     int width;
-    u16 *mapView;
+    u32 *mapView;
     int x0, y0;
     int x2, y2;
     u16 *src;
@@ -760,8 +760,7 @@ bool8 CameraMove(int x, int y)
         ResetFieldCamera();
         gSaveBlock1Ptr->pos.x += x;
         gSaveBlock1Ptr->pos.y += y;
-        //mapView gets saved and reloaded for seemingly no reason? gonna comment this out
-        //MoveMapViewToBackup(direction);
+        MoveMapViewToBackup(direction);
     }
     return gCamera.active;
 }
