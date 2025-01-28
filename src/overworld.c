@@ -477,6 +477,9 @@ bool8 addObjectEventTemplatesToConnection(u8 mapGroup, u8 mapNum, struct ObjectE
 {
     u8 count = gSaveBlock1Ptr->connectionObjectEventCount;
 
+    if (objectEvents == NULL)
+        return FALSE;
+
     //Check if we have maximum amount of connection event templates loaded and if so fail
     if (count >= OBJECT_EVENT_CONNECTION_TEMPLATES_COUNT)
         return FALSE;
