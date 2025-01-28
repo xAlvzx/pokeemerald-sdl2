@@ -550,7 +550,7 @@ static bool32 SavedMapViewIsEmpty(void)
 
 static void ClearSavedMapView(void)
 {
-    CpuFill16(0, gSaveBlock1Ptr->mapView, sizeof(gSaveBlock1Ptr->mapView));
+    memset(gSaveBlock1Ptr->mapView, 0, sizeof(gSaveBlock1Ptr->mapView));
 }
 
 static void LoadSavedMapView(void)
@@ -600,7 +600,7 @@ static void MoveMapViewToBackup(u8 direction)
     u32 *mapView;
     int x0, y0;
     int x2, y2;
-    u16 *src;
+    u32 *src;
     u32 *dest;
     int srci, desti;
     int r9, r8;
@@ -746,13 +746,13 @@ bool8 CameraMove(int x, int y)
     }
     else
     {
-        SaveMapView();
         ClearMirageTowerPulseBlendEffect();
         old_x = gSaveBlock1Ptr->pos.x;
         old_y = gSaveBlock1Ptr->pos.y;
         connection = GetIncomingConnection(direction, gSaveBlock1Ptr->pos.x, gSaveBlock1Ptr->pos.y);
         SetPositionFromConnection(connection, direction, x, y);
         LoadMapFromCameraTransition(connection->mapGroup, connection->mapNum);
+        SaveMapView();
         gCamera.active = TRUE;
         gCamera.x = old_x - gSaveBlock1Ptr->pos.x;
         gCamera.y = old_y - gSaveBlock1Ptr->pos.y;
