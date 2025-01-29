@@ -21,6 +21,9 @@
 #include "platform/dma.h"
 #include "platform/framedraw.h"
 
+#define INVALID_SET_FILE_POINTER  0xFFFFFFFF
+typedef unsigned int UINT_PTR;
+
 extern void (*const gIntrTable[])(void);
 
 HANDLE vBlankSemaphore;

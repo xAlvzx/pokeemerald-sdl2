@@ -79,7 +79,7 @@
 #define NAKED __attribute__((naked))
 
 // IDE support
-#if defined (__APPLE__) || defined (__CYGWIN__) || defined(__INTELLISENSE__) || defined (_MSC_VER)
+/*#if defined (__APPLE__) || defined (__CYGWIN__) || defined(__INTELLISENSE__) || defined (_MSC_VER)
 // We define these when using certain IDEs to fool preproc
 #define _(x)        {x}
 #define __(x)       {x}
@@ -93,7 +93,7 @@
 void * memcpy(void *, const void *, size_t);
 void * memset(void *, int, size_t);
 int strcmp(const char *, const char*);
-#endif // IDE support
+#endif // IDE support*/
 
 #define ARRAY_COUNT(array) (size_t)(sizeof(array) / sizeof((array)[0]))
 
