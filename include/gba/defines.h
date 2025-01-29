@@ -10,9 +10,11 @@ typedef float __float128;
 #ifdef PORTABLE
 #define IWRAM_DATA
 #define EWRAM_DATA
+#define COMMON_DATA
 #else
 #define IWRAM_DATA __attribute__((section("iwram_data")))
 #define EWRAM_DATA __attribute__((section("ewram_data")))
+#define COMMON_DATA __attribute__((section("common_data")))
 #endif
 #define UNUSED __attribute__((unused))
 
@@ -100,7 +102,7 @@ extern unsigned char OAM[OAM_SIZE] __attribute__ ((aligned (4)));
 #define DISPLAY_TILE_HEIGHT (DISPLAY_HEIGHT / TILE_HEIGHT)
 
 // Size of different tile formats in bytes
-#define TILE_SIZE(bpp)((bpp) * TILE_WIDTH * TILE_HEIGHT / 8)
+#define TILE_SIZE(bpp) ((bpp) * TILE_WIDTH * TILE_HEIGHT / 8)
 #define TILE_SIZE_1BPP TILE_SIZE(1) // 8
 #define TILE_SIZE_4BPP TILE_SIZE(4) // 32
 #define TILE_SIZE_8BPP TILE_SIZE(8) // 64

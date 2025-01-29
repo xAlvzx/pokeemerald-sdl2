@@ -1,5 +1,4 @@
 #ifdef RENDERER_EASY_DRAW
-#define NO_UNDERSCORE_HACK
 #include "global.h"
 #include <stdbool.h>
 #include "platform/dma.h"
@@ -734,7 +733,7 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
         }
         break;
     default:
-        printf("Video mode %u is unsupported.\n", mode);
+        DBGPRINTF("Video mode %u is unsupported.\n", mode);
         break;
     }
     

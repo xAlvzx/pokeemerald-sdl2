@@ -5,11 +5,6 @@
 //#include <time.h>
 #include <windows.h>
 
-#ifdef xinputkeys
-#include <xinput.h>
-#endif
-
-#define NO_UNDERSCORE_HACK
 
 #include "global.h"
 #include "platform.h"
@@ -121,28 +116,28 @@ void AddMenus(HWND hwnd) {
 
     HMENU hMenubar;
     HMENU hMenu;
-	HMENU hMenuFps;
+    HMENU hMenuFps;
 
     hMenubar = CreateMenu();
     hMenu = CreateMenu();
-	hMenuFps = CreateMenu();
+    hMenuFps = CreateMenu();
 
     AppendMenuA(hMenu, MF_STRING, IDM_SPEEDUPTOGGLE, IDM_SPEEDUPTOGGLETEXT);
     AppendMenuA(hMenu, MF_STRING, IDM_RESETGAME, IDM_RESETGAMETEXT);
     AppendMenuA(hMenu, MF_STRING, IDM_PAUSEGAME, IDM_PAUSEGAMETEXT);
-	AppendMenuA(hMenu, MF_STRING, IDM_TOGGLEBITBLT, IDM_TOGGLEBITBLTTEXT);
-	
-	AppendMenuA(hMenuFps, MF_STRING, IDM_60FPS, IDM_60FPSTEXT);
-	AppendMenuA(hMenuFps, MF_STRING, IDM_30FPS, IDM_30FPSTEXT);
-	AppendMenuA(hMenuFps, MF_STRING, IDM_20FPS, IDM_20FPSTEXT);
-	AppendMenuA(hMenuFps, MF_STRING, IDM_10FPS, IDM_10FPSTEXT);
-	AppendMenuA(hMenuFps, MF_STRING, IDM_5FPS, IDM_5FPSTEXT);
-	AppendMenuA(hMenuFps, MF_STRING, IDM_3FPS, IDM_3FPSTEXT);
-	AppendMenuA(hMenuFps, MF_STRING, IDM_1FPS, IDM_1FPSTEXT);
+    AppendMenuA(hMenu, MF_STRING, IDM_TOGGLEBITBLT, IDM_TOGGLEBITBLTTEXT);
+    
+    AppendMenuA(hMenuFps, MF_STRING, IDM_60FPS, IDM_60FPSTEXT);
+    AppendMenuA(hMenuFps, MF_STRING, IDM_30FPS, IDM_30FPSTEXT);
+    AppendMenuA(hMenuFps, MF_STRING, IDM_20FPS, IDM_20FPSTEXT);
+    AppendMenuA(hMenuFps, MF_STRING, IDM_10FPS, IDM_10FPSTEXT);
+    AppendMenuA(hMenuFps, MF_STRING, IDM_5FPS, IDM_5FPSTEXT);
+    AppendMenuA(hMenuFps, MF_STRING, IDM_3FPS, IDM_3FPSTEXT);
+    AppendMenuA(hMenuFps, MF_STRING, IDM_1FPS, IDM_1FPSTEXT);
 
 
     AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenu, "&Debug");
-	AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuFps, "&FPS");
+    AppendMenuA(hMenubar, MF_POPUP, (UINT_PTR) hMenuFps, "&FPS");
     SetMenu(hwnd, hMenubar);
 }
 
@@ -265,37 +260,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 ModifyMenuA(GetMenu(hWnd), IDM_PAUSEGAME, MF_BYCOMMAND | MF_UNCHECKED, IDM_PAUSEGAME, IDM_PAUSEGAMETEXT);
             }
             break;
-		case IDM_TOGGLEBITBLT:
-			bitBltEnabled = !bitBltEnabled;
-			break;
-		case IDM_60FPS:
-			frameSkipSet = 1;
-			frameskipCounter = 0;
-			break;
-		case IDM_30FPS:
-			frameSkipSet = 2;
-			frameskipCounter = 0;
-			break;
-		case IDM_20FPS:
-			frameSkipSet = 3;
-			frameskipCounter = 0;
-			break;
-		case IDM_10FPS:
-			frameSkipSet = 6;
-			frameskipCounter = 0;
-			break;
-		case IDM_5FPS:
-			frameSkipSet = 12;
-			frameskipCounter = 0;
-			break;
-		case IDM_3FPS:
-			frameSkipSet = 20;
-			frameskipCounter = 0;
-			break;
-		case IDM_1FPS:
-			frameSkipSet = 60;
-			frameskipCounter = 0;
-			break;
+        case IDM_TOGGLEBITBLT:
+            bitBltEnabled = !bitBltEnabled;
+            break;
+        case IDM_60FPS:
+            frameSkipSet = 1;
+            frameskipCounter = 0;
+            break;
+        case IDM_30FPS:
+            frameSkipSet = 2;
+            frameskipCounter = 0;
+            break;
+        case IDM_20FPS:
+            frameSkipSet = 3;
+            frameskipCounter = 0;
+            break;
+        case IDM_10FPS:
+            frameSkipSet = 6;
+            frameskipCounter = 0;
+            break;
+        case IDM_5FPS:
+            frameSkipSet = 12;
+            frameskipCounter = 0;
+            break;
+        case IDM_3FPS:
+            frameSkipSet = 20;
+            frameskipCounter = 0;
+            break;
+        case IDM_1FPS:
+            frameSkipSet = 60;
+            frameskipCounter = 0;
+            break;
         }
         break;
         
@@ -407,20 +402,20 @@ int _start(int argc, char **argv)
     HACCEL hAccelTable;
     HINSTANCE hInstance = GetModuleHandle(NULL);
     int nCmdShow = 1;
-    //fprintf_placeholder(stderr, "Game launch main()\n");
+    DBGPRINTF("Game launch main()\n");
     ReadSaveFile(savePath);
     MyRegisterClass(hInstance);
 
     // Perform application initialization:
     if (!InitInstance (hInstance, nCmdShow))
     {
-        //fprintf_placeholder(stderr, "Creating win32 window failed!\n");
+        DBGPRINTF("Creating win32 window failed!\n");
         return FALSE;
     }
-    //fprintf_placeholder(stderr, "Window Init done!\n");
+    DBGPRINTF("Window Init done!\n");
     window_hdc = GetDC(ghwnd);
     win32CreateBitmap();
-    //fprintf_placeholder(stderr, "Bitmap Init done!\n");
+    DBGPRINTF("Bitmap Init done!\n");
     
     //todo: convert these to int64
     QueryPerformanceCounter(&largeint);
@@ -430,19 +425,19 @@ int _start(int argc, char **argv)
     vBlankSemaphore = CreateEvent(NULL, TRUE, FALSE, "vBlankEvent"); 
     if (vBlankSemaphore == NULL) 
     {
-        //fprintf_placeholder(stderr, "Could not create a event!\n");
+        DBGPRINTF("Could not create a event!\n");
         return 1;
     }
     
-    //fprintf_placeholder(stderr, "Event Init done!\n");
+    DBGPRINTF("Event Init done!\n");
 
     cgb_audio_init(42048);
-    //fprintf_placeholder(stderr, "cgb_audio_init Init done!\n");
+    DBGPRINTF("cgb_audio_init Init done!\n");
     
     VDraw();
     int ThreadID;
-    CreateThread(NULL, 0, DoMainPtr, (LPVOID)&nCmdShow, 0, &ThreadID);
-    //fprintf_placeholder(stderr, "Thread Init done!\n");
+    CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)DoMain, (LPVOID)&nCmdShow, 0, &ThreadID);
+    DBGPRINTF("Thread Init done!\n");
 
     double accumulator = 0.0;
 
@@ -450,7 +445,7 @@ int _start(int argc, char **argv)
     internalClock.status = SIIRTCINFO_24HOUR;
     UpdateInternalClock();
     
-    //fprintf_placeholder(stderr, "Clock init done!\n");
+    DBGPRINTF("Clock init done!\n");
     
     unsigned int fpsseconds = GetTickCount()+1000;
     while (isRunning)
@@ -492,7 +487,7 @@ int _start(int argc, char **argv)
 
                     if(!SetEvent(vBlankSemaphore))
                     {
-                        //fprintf_placeholder(stderr, "Could not set vBlankSemaphore!");
+                        DBGPRINTF("Could not set vBlankSemaphore!");
                         return 1;
                     }
                     accumulator -= dt;
@@ -531,7 +526,7 @@ static void ReadSaveFile(char *path)
     if (sSaveFile == INVALID_HANDLE_VALUE)
     {
         sSaveFile = CreateFileA(path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (sSaveFile == INVALID_HANDLE_VALUE) { printf_placeholder("Invalid HANDLE at ReadSaveFile()\n"); }
+        if (sSaveFile == INVALID_HANDLE_VALUE) { DBGPRINTF("Invalid HANDLE at ReadSaveFile()\n"); }
     }
 
     int fileSize = SetFilePointer(sSaveFile, 0, 0, FILE_END);
@@ -572,22 +567,22 @@ void Platform_StoreSaveFile(void)
 void Platform_ReadFlash(u16 sectorNum, u32 offset, u8 *dest, u32 size)
 {
     int bytesRead;
-    printf_placeholder("ReadFlash(sectorNum=0x%04X,offset=0x%08X,size=0x%02X)\n",sectorNum,offset,size);
+    DBGPRINTF("ReadFlash(sectorNum=0x%04X,offset=0x%08X,size=0x%02X)\n",sectorNum,offset,size);
     HANDLE savefile = CreateFileA(savePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL); 
     if (savefile == INVALID_HANDLE_VALUE)
     {
-        printf_placeholder("Error opening save file (GetLastError %u).\n", GetLastError());
+        DBGPRINTF("Error opening save file (GetLastError %u).\n", GetLastError());
         return;
     }
     if (SetFilePointer(savefile, (sectorNum << gFlash->sector.shift) + offset, 0, FILE_BEGIN) == INVALID_SET_FILE_POINTER)
     {
-        printf_placeholder("SetFilePointer failed! (offset=%x) (GetLastError %u)\n", (sectorNum << gFlash->sector.shift), GetLastError());
+        DBGPRINTF("SetFilePointer failed! (offset=%x) (GetLastError %u)\n", (sectorNum << gFlash->sector.shift), GetLastError());
         CloseHandle(savefile);
         return;
     }
     if (!ReadFile(savefile, dest, size, &bytesRead, NULL))
     {
-        printf_placeholder("ReadFile failed! (GetLastError %u)\n", GetLastError());
+        DBGPRINTF("ReadFile failed! (GetLastError %u)\n", GetLastError());
         CloseHandle(savefile);
         return;
     }
@@ -607,97 +602,37 @@ static void CloseSaveFile()
     }
 }
 
-#ifdef xinputkeys
-#define STICK_THRESHOLD 0.5f
-u16 GetXInputKeys()
-{
-    XINPUT_STATE state;
-    ZeroMemory(&state, sizeof(XINPUT_STATE));
-
-    DWORD dwResult = XInputGetState(0, &state);
-    u16 xinputKeys = 0;
-
-    if (dwResult == ERROR_SUCCESS)
-    {
-        /* A */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) >> 12;
-        /* B */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_X) >> 13;
-        /* Start */  xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_START) >> 1;
-        /* Select */ xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK) >> 3;
-        /* L */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) << 1;
-        /* R */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) >> 1;
-        /* Up */     xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) << 6;
-        /* Down */   xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) << 6;
-        /* Left */   xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) << 3;
-        /* Right */  xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) << 1;
-
-
-        /* Control Stick */
-        float xAxis = (float)state.Gamepad.sThumbLX / (float)SHRT_MAX;
-        float yAxis = (float)state.Gamepad.sThumbLY / (float)SHRT_MAX;
-
-        if (xAxis < -STICK_THRESHOLD) xinputKeys |= DPAD_LEFT;
-        if (xAxis >  STICK_THRESHOLD) xinputKeys |= DPAD_RIGHT;
-        if (yAxis < -STICK_THRESHOLD) xinputKeys |= DPAD_DOWN;
-        if (yAxis >  STICK_THRESHOLD) xinputKeys |= DPAD_UP;
-
-
-        /* Speedup */
-        // Note: 'speedup' variable is only (un)set on keyboard input
-        double oldTimeScale = timeScale;
-        timeScale = (state.Gamepad.bRightTrigger > 0x80 || speedUp) ? 5.0 : 1.0;
-
-        if (oldTimeScale != timeScale)
-        {
-            if (timeScale > 1.0)
-            {
-                //SDL_PauseAudio(1);
-            }
-            else
-            {
-                //SDL_ClearQueuedAudio(1);
-                //SDL_PauseAudio(0);
-            }
-        }
-    }
-
-    return xinputKeys;
-}
-#endif // _WIN32
 
 u16 Platform_GetKeyInput(void)
 {
-#ifdef xinputkeys
-    u16 gamepadKeys = GetXInputKeys();
-    return (gamepadKeys != 0) ? gamepadKeys : keys;
-#endif
-
     return keys;
 }
 
 void VDraw()
 {
-    DrawFrame(lpBitmapBits);
-	
-	
     if (frameskipCounter == 0)
-	{
-		//convert pixels to to the correct format
-		for (int x = 0; x < DISPLAY_HEIGHT * DISPLAY_WIDTH ; x++)
-		{
-			uint16_t color = lpBitmapBits[x];
-			lpBitmapBits[x] = ((color & 0x001F) << 10) | (color & 0x03E0) | ((color & 0x7C00) >> 10);
-		}
-		
-		if (bitBltEnabled)
-		{
-			BitBlt(window_hdc, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, hdc_bmp, 0, 0, SRCCOPY);
-			InvalidateRect(ghwnd, NULL, FALSE);
-		}
-		framesDrawn++;
-	}
-	frameskipCounter++;
-	if (frameskipCounter == frameSkipSet)
-		frameskipCounter = 0;
+    {
+        DrawFrame(lpBitmapBits);
+
+        //convert pixels to to the correct format
+        uint32_t* bitmap32 = (uint32_t*)lpBitmapBits; //cast to 32bit so we could convert two pixels at once
+        while (bitmap32 != &lpBitmapBits[DISPLAY_HEIGHT * DISPLAY_WIDTH])
+        {
+            uint32_t color32 = *bitmap32;
+            *bitmap32 = ((color32 & 0x1F001F) << 10) | (color32 & 0x83E083E0) | ((color32 & 0x7C007C00) >> 10);
+            bitmap32++;
+        }
+        
+        if (bitBltEnabled)
+        {
+            BitBlt(window_hdc, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, hdc_bmp, 0, 0, SRCCOPY);
+            InvalidateRect(ghwnd, NULL, FALSE);
+        }
+        framesDrawn++;
+    }
+    frameskipCounter++;
+    if (frameskipCounter == frameSkipSet)
+        frameskipCounter = 0;
     
     REG_VCOUNT = 161; // prep for being in VBlank period
 }
@@ -745,7 +680,7 @@ static void UpdateInternalClock(void)
     GetLocalTime(&time);
 
     internalClock.year = BinToBcd(time.wYear - 100);
-    internalClock.month = BinToBcd(time.wMonth) + 1;
+    internalClock.month = BinToBcd(time.wMonth-1) + 1;
     internalClock.day = BinToBcd(time.wDay);
     internalClock.dayOfWeek = BinToBcd(time.wDayOfWeek);
     internalClock.hour = BinToBcd(time.wHour);
@@ -764,7 +699,7 @@ void Platform_GetDateTime(struct SiiRtcInfo *rtc)
     rtc->hour = internalClock.hour;
     rtc->minute = internalClock.minute;
     rtc->second = internalClock.second;
-    printf_placeholder("GetDateTime: %d-%02d-%02d %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->year),
+    DBGPRINTF("GetDateTime: %d-%02d-%02d %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->year),
                                                          ConvertBcdToBinary(rtc->month),
                                                          ConvertBcdToBinary(rtc->day),
                                                          ConvertBcdToBinary(rtc->hour),
@@ -789,7 +724,7 @@ void Platform_GetTime(struct SiiRtcInfo *rtc)
     rtc->hour = internalClock.hour;
     rtc->minute = internalClock.minute;
     rtc->second = internalClock.second;
-    printf_placeholder("GetTime: %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->hour),
+    DBGPRINTF("GetTime: %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->hour),
                                         ConvertBcdToBinary(rtc->minute),
                                         ConvertBcdToBinary(rtc->second));
 }
@@ -805,4 +740,11 @@ void Platform_SetAlarm(u8 *alarmData)
 {
     // TODO
 }
+
+void SoftReset(u32 resetFlags)
+{
+    puts("Soft Reset called. Exiting.");
+    ExitProcess(0);
+}
+
 #endif

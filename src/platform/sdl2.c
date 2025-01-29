@@ -11,8 +11,6 @@
 
 #include <SDL2/SDL.h>
 
-#define NO_UNDERSCORE_HACK
-
 #include "global.h"
 #include "platform.h"
 #include "rtc.h"
@@ -71,21 +69,21 @@ int main(int argc, char **argv)
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
-        fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+        DBGPRINTF("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
 
     sdlWindow = SDL_CreateWindow("pokeemerald", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, DISPLAY_WIDTH * videoScale, DISPLAY_HEIGHT * videoScale, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (sdlWindow == NULL)
     {
-        fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        DBGPRINTF("Window could not be created! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
 
     sdlRenderer = SDL_CreateRenderer(sdlWindow, -1, SDL_RENDERER_PRESENTVSYNC);
     if (sdlRenderer == NULL)
     {
-        fprintf(stderr, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        DBGPRINTF("Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
 
@@ -100,7 +98,7 @@ int main(int argc, char **argv)
                                    DISPLAY_WIDTH, DISPLAY_HEIGHT);
     if (sdlTexture == NULL)
     {
-        fprintf(stderr, "Texture could not be created! SDL_Error: %s\n", SDL_GetError());
+        DBGPRINTF("Texture could not be created! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
 
@@ -236,7 +234,7 @@ void Platform_StoreSaveFile(void)
 
 void Platform_ReadFlash(u16 sectorNum, u32 offset, u8 *dest, u32 size)
 {
-    printf("ReadFlash(sectorNum=0x%04X,offset=0x%08X,size=0x%02X)\n",sectorNum,offset,size);
+    DBGPRINTF("ReadFlash(sectorNum=0x%04X,offset=0x%08X,size=0x%02X)\n",sectorNum,offset,size);
     FILE * savefile = fopen("pokeemerald.sav", "r+b");
     if (savefile == NULL)
     {
@@ -499,7 +497,7 @@ static void UpdateInternalClock(void)
     struct tm *time = localtime(&rawTime);
 
     internalClock.year = BinToBcd(time->tm_year - 100);
-    internalClock.month = BinToBcd(time->tm_mon) + 1;
+    internalClock.month = BinToBcd(time->tm_mon + 1);
     internalClock.day = BinToBcd(time->tm_mday);
     internalClock.dayOfWeek = BinToBcd(time->tm_wday);
     internalClock.hour = BinToBcd(time->tm_hour);
@@ -518,7 +516,7 @@ void Platform_GetDateTime(struct SiiRtcInfo *rtc)
     rtc->hour = internalClock.hour;
     rtc->minute = internalClock.minute;
     rtc->second = internalClock.second;
-    printf("GetDateTime: %d-%02d-%02d %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->year),
+    DBGPRINTF("GetDateTime: %d-%02d-%02d %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->year),
                                                          ConvertBcdToBinary(rtc->month),
                                                          ConvertBcdToBinary(rtc->day),
                                                          ConvertBcdToBinary(rtc->hour),
@@ -543,7 +541,7 @@ void Platform_GetTime(struct SiiRtcInfo *rtc)
     rtc->hour = internalClock.hour;
     rtc->minute = internalClock.minute;
     rtc->second = internalClock.second;
-    printf("GetTime: %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->hour),
+    DBGPRINTF("GetTime: %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->hour),
                                         ConvertBcdToBinary(rtc->minute),
                                         ConvertBcdToBinary(rtc->second));
 }
@@ -558,6 +556,12 @@ void Platform_SetTime(struct SiiRtcInfo *rtc)
 void Platform_SetAlarm(u8 *alarmData)
 {
     // TODO
+}
+
+void SoftReset(u32 resetFlags)
+{
+    puts("Soft Reset called. Exiting.");
+    exit(0);
 }
 
 #endif

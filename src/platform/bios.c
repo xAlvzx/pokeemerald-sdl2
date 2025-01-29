@@ -1,12 +1,7 @@
 #include "global.h"
 // BIOS function implementations are based on the VBA-M source code.
 
-#ifdef _WIN32 //underscore hack stuff
-#define exit _exit
-#endif
-
 #define NO_BSS __attribute__((section (".data")))
-
 //memory defines here because there's no better spot for them
 u16 INTR_CHECK __attribute__((section (".nobss")));
 void *INTR_VECTOR __attribute__((section (".nobss")));
@@ -177,8 +172,7 @@ void LZ77UnCompVram(const u32 *src_, void *dest_)
                 // Some Ruby/Sapphire tilesets overflow.
                 if (destPos + blockSize > destSize) {
                     blockSize = destSize - destPos;
-                    //fprintf(stderr, "Destination buffer overflow.\n");
-                    puts("Destination buffer overflow.\n");
+                    DBGPRINTF("Destination buffer overflow.\n");
                 }
 
                 if (blockPos < 0)
@@ -446,12 +440,6 @@ void ObjAffineSet(struct ObjAffineSrcData *src, void *dest, s32 count, s32 offse
         CPUWriteHalfWord(dest, dmy);
         dest += offset;
     }
-}
-
-void SoftReset(u32 resetFlags)
-{
-    puts("Soft Reset called. Exiting.");
-    //exit(0);
 }
 
 // Following functions taken from mGBA's source

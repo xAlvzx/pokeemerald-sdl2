@@ -1,5 +1,3 @@
-#define NO_UNDERSCORE_HACK
-
 #include "global.h"
 #include "platform/dma.h"
 
@@ -94,7 +92,7 @@ void DmaSet(int dmaNum, const void *src, void *dest, u32 control)
 {
     if (dmaNum >= DMA_COUNT)
     {
-        //fprintf(stderr, "DmaSet with invalid DMA number: dmaNum=%d, src=%p, dest=%p, control=%d\n", dmaNum, src, dest, control);
+        DBGPRINTF("DmaSet with invalid DMA number: dmaNum=%d, src=%p, dest=%p, control=%d\n", dmaNum, src, dest, control);
         return;
     }
 
