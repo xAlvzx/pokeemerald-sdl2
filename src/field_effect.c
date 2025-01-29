@@ -2798,7 +2798,7 @@ static void FieldMoveShowMonIndoorsEffect_Init(struct Task *task)
 
 static void FieldMoveShowMonIndoorsEffect_LoadGfx(struct Task *task)
 {
-    task->genericPtr[0] = GpuGetTilemapPtr(0);
+    task->genericPtr[1] = GpuGetTilemapPtr(0);
     CpuCopy16(sFieldMoveStreaksIndoors_Gfx, GpuGetGfxPtr(0), 0x80);
     GpuClearTilemap(0);
     LoadPalette(sFieldMoveStreaksIndoors_Pal, BG_PLTT_ID(15), sizeof(sFieldMoveStreaksIndoors_Pal));
@@ -2885,7 +2885,7 @@ static bool8 SlideIndoorBannerOnscreen(struct Task *task)
     {
         dstOffs = (32 - dstOffs) & 0x1f;
         srcOffs = (32 - task->tBgOffset) & 0x1f;
-        dest = (u16 *)(task->genericPtr[0] + 0x140);
+        dest = (u16 *)(task->genericPtr[1] + 0x140);
         for (i = 0; i < 10; i++)
         {
             dest[dstOffs + i * 32] = sFieldMoveStreaksIndoors_Tilemap[srcOffs + i * 32];
@@ -2912,7 +2912,7 @@ static bool8 SlideIndoorBannerOffscreen(struct Task *task)
     if (dstOffs >= task->tBgOffset)
     {
         dstOffs = (task->tBgHoriz >> 3) & 0x1f;
-        dest = (u16 *)(task->genericPtr[0] + 0x140);
+        dest = (u16 *)(task->genericPtr[1] + 0x140);
         for (i = 0; i < 10; i++)
         {
             dest[dstOffs + i * 32] = 0xf000;
