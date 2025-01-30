@@ -592,7 +592,7 @@ struct WarpData
     s8 warpId;
     //u8 padding;
     s16 x, y;
-};
+} ALIGNED(4);
 
 struct ItemSlot
 {
