@@ -1,7 +1,7 @@
-PREFIX = powerpc-eabi-
-OBJCOPY := $(PREFIX)objcopy
-CC := xgcc
-AS := $(PREFIX)as
+PREFIX = powerpcle-pe-winnt-
+OBJCOPY := powerpc-eabi-objcopy
+CC := $(PREFIX)gcc
+AS := powerpc-eabi-as
 PASM = pasm.exe
 
 ASM_PSEUDO_OP_CONV := sed -e 's/\.4byte/\.int/g;s/\.2byte/\.short/g'
@@ -9,7 +9,7 @@ ASM_PSEUDO_OP_CONV := sed -e 's/\.4byte/\.int/g;s/\.2byte/\.short/g'
 FIX_UNDERSCORE := $(OBJCOPY) --prefix-symbol _
 
 #normal cpp but renamed so it wouldnt conflict with mingw because my env is cursed
-CPP := ntcpp.exe
+CPP := $(PREFIX)cpp
 LD = msvclink.exe
 OBJCONV = objconv.exe
 
@@ -55,14 +55,14 @@ ASFLAGS := --defsym MODERN=$(MODERN) --defsym PORTABLE=1 --defsym UBFIX=1 -m32 -
 
 GCC_VER := $(shell $(CC) -dumpversion)
 
-CC1 	:= $(shell xgcc --print-prog-name=cc1) -quiet
+CC1 	:= $(shell $(PREFIX)gcc --print-prog-name=cc1) -quiet
 override CFLAGS += -fno-zero-initialized-in-bss -Wno-trigraphs -Wimplicit -Wparentheses -Wunused -std=gnu99 -nostdinc -fno-leading-underscore -fno-dce -fno-builtin -Wno-unused-function -DPORTABLE -DNONMATCHING -D UBFIX -DMODERN=$(MODERN) -mcpu=603 -mhard-float -fsigned-char -Wno-builtin-declaration-mismatch 
 ROM		:= pokeemerald.exe
 OBJ_DIR	:= a/pc
 
-CPPFLAGS := -iquote include -iquote $(GFLIB_SUBDIR) -Wno-trigraphs -D NONMATCHING -D PORTABLE -D $(TARGET_PLATFORM) -D $(TILE_RENDERER) -D MODERN=$(MODERN) -D UBFIX -nostdinc -I/d/Retro68/NTtools/include -I/d/Retro68/NTtools/include -D"__int64=long long" -D_WIN32_WINNT=0x0400 -D_M_PPC -D_PPC_ -D_WIN32 -D__unaligned= -D_DLL=0 -D__STDC__=0 -D_MSC_VER=0 -D__cdecl= -D__stdcall= -I/d/Retro68/NTtools/baselibc/include
+#todo fix the hardcoded baselibc path
+CPPFLAGS := -iquote include -iquote $(GFLIB_SUBDIR) -Wno-trigraphs -D NONMATCHING -D PORTABLE -D $(TARGET_PLATFORM) -D $(TILE_RENDERER) -D MODERN=$(MODERN) -D UBFIX -nostdinc -D"__int64=long long" -D_WIN32_WINNT=0x0400 -D_M_PPC -D_PPC_ -D_WIN32 -D__unaligned= -D_DLL=0 -D__STDC__=0 -D_MSC_VER=0 -D__cdecl= -D__stdcall= -I/d/peppc-build/toolchain/include/baselibc/include
 
-#LDFLAGS = -nostartfiles -nodefaultlibs -L./baselibc -L./gccle -Wl,-T"./of.ld"
 LDFLAGS = -NODEFAULTLIB -SUBSYSTEM:console -ENTRY:_start
 
 PLATFORM_INCLUDES := 
@@ -72,10 +72,10 @@ ifeq ($(TARGET_PLATFORM), PLATFORM_SDL2)
 endif
 	
 ifeq ($(TARGET_PLATFORM), PLATFORM_WIN32)
-	PLATFORM_INCLUDES = "d:\Retro68\NTtools\lib\kernel32.lib" "d:\Retro68\NTtools\lib\user32.lib" "d:\Retro68\NTtools\lib\gdi32.lib"
+	PLATFORM_INCLUDES = kernel32.lib user32.lib gdi32.lib
 endif
 
-LIB := $(LIBPATH) -lgcc -lc
+# LIB := $(LIBPATH) -lgcc -lc
 
 AUTO_GEN_TARGETS :=
 include make_tools.mk
@@ -223,6 +223,8 @@ override CFLAGS += -g -O0
 else
 override CFLAGS += -O1
 endif
+
+%src/platform/gba_fast_draw.o: CFLAGS += -O3 -fno-align-functions -fno-align-labels -fno-align-jumps -fno-align-loops
 
 $(C_BUILDDIR)/%.o : $(C_SUBDIR)/%.c $$(c_dep)
 	@$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
