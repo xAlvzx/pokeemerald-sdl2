@@ -18,6 +18,7 @@
 #include "strings.h"
 #include "string_util.h"
 #include "trainer_card.h"
+#include "menu_helpers.h"
 #include "gpu_regs.h"
 #include "international_string_util.h"
 #include "pokedex.h"
@@ -598,12 +599,12 @@ static void CB2_InitTrainerCard(void)
         gMain.state++;
         break;
     case 1:
-        DmaClear32(3, (void *)OAM, OAM_SIZE);
+        DmaClear32(3, OAM, OAM_SIZE);
         gMain.state++;
         break;
     case 2:
         if (!sData->blendColor)
-            DmaClear16(3, (void *)PLTT, PLTT_SIZE);
+            DmaClear16(3, PLTT, PLTT_SIZE);
         gMain.state++;
         break;
     case 3:

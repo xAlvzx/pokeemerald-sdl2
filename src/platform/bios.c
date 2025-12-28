@@ -148,9 +148,9 @@ void CpuFastSet(const void *src, void *dst, u32 cnt)
     }
 }
 
-void LZ77UnCompVram(const u32 *src_, void *dest_)
+void LZ77UnCompVram(const void *src_, void *dest_)
 {
-    const u8 *src = src_;
+    const u8 *src = (const u8 *)src_;
     u8 *dest = dest_;
     int destSize = (src[3] << 16) | (src[2] << 8) | src[1];
     int srcPos = 4;
@@ -198,9 +198,9 @@ fail:
     puts("Fatal error while decompressing LZ file.\n");
 }
 
-void LZ77UnCompWram(const u32 *src, void *dst)
+void LZ77UnCompWram(const void *src, void *dst)
 {
-    const uint8_t *source = src;
+    const uint8_t *source = (const uint8_t *)src;
     uint8_t *dest = dst;
 
     uint32_t header = CPUReadMemory(source);
@@ -244,7 +244,7 @@ void LZ77UnCompWram(const u32 *src, void *dst)
     }
 }
 
-void RLUnCompWram(const u32 *src, void *dest)
+void RLUnCompWram(const void *src, void *dest)
 {
     int remaining = CPUReadMemory(src) >> 8;
     int padding = (4 - remaining) & 0x3;
@@ -288,7 +288,7 @@ void RLUnCompWram(const u32 *src, void *dest)
     }
 }
 
-void RLUnCompVram(const u32 *src, void *dest)
+void RLUnCompVram(const void *src, void *dest)
 {
     int remaining = CPUReadMemory(src) >> 8;
     int padding = (4 - remaining) & 0x3;
@@ -312,7 +312,7 @@ void RLUnCompVram(const u32 *src, void *dest)
                 if ((u32)dest & 1)
                 {
                     halfWord |= block << 8;
-                    CPUWriteHalfWord((u32)dest ^ 1, halfWord);
+                    CPUWriteHalfWord((void *)((u32)dest ^ 1), halfWord);
                 }
                 else
                     halfWord = block;
@@ -330,7 +330,7 @@ void RLUnCompVram(const u32 *src, void *dest)
                 if ((u32)dest & 1)
                 {
                     halfWord |= byte << 8;
-                    CPUWriteHalfWord((u32)dest ^ 1, halfWord);
+                    CPUWriteHalfWord((void *)((u32)dest ^ 1), halfWord);
                 }
                 else
                     halfWord = byte;

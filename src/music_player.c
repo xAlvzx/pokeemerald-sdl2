@@ -4,11 +4,16 @@
 #include "gba/m4a_internal.h"
 #include "platform.h"
 
+#ifdef PORTABLE
+#include "cgb_audio.h"
+#endif
+
 // Don't uncomment this. vvvvv
 // #define POKEMON_EXTENSIONS
 #define MIXED_AUDIO_BUFFER_SIZE 4907
 
-static u32 MidiKeyToFreq(struct WaveData2 *wav, u8 key, u8 pitch);
+static u32 MidiKeyToFreq(struct WaveData *wav, u8 key, u8 pitch);
+void ChnVolSetAsm(struct MixerSource *chan, struct MP2KTrack *track);
 extern void * const gMPlayJumpTableTemplate[];
 extern const u8 gScaleTable[];
 extern const u32 gFreqTable[];
@@ -189,7 +194,7 @@ u8 ConsumeTrackByte(struct MP2KTrack *track) {
     return SafeDereferenceU8(ptr);
 }
 
-void MPlayJumpTableCopy(void **mplayJumpTable) {
+void MPlayJumpTableCopy(MPlayFunc *mplayJumpTable) {
     for (uf8 i = 0; i < 36; i++) {
         mplayJumpTable[i] = SafeDereferenceVoidPtr(&gMPlayJumpTableTemplate[i]);
     }
@@ -344,7 +349,7 @@ void MP2K_event_port(struct MP2KPlayerState *unused, struct MP2KTrack *track) {
 
 void MP2KPlayerMain(void *voidPtrPlayer) {
     struct MP2KPlayerState *player = (struct MP2KPlayerState *)voidPtrPlayer;
-    struct SoundMixerState *mixer = SOUND_INFO_PTR;
+    struct SoundMixerState *mixer = (struct SoundMixerState *)SOUND_INFO_PTR;
 
     if (player->lockStatus != PLAYER_UNLOCKED) {
         return;
@@ -410,7 +415,7 @@ void MP2KPlayerMain(void *voidPtrPlayer) {
                 } else if (event >= 0xB1) {
                     void (*eventFunc)(struct MP2KPlayerState *, struct MP2KTrack *);
                     player->cmd = event - 0xB1;
-                    eventFunc = mixer->mp2kEventFuncTable[player->cmd];
+                    eventFunc = (void (*)(struct MP2KPlayerState *, struct MP2KTrack *))mixer->mp2kEventFuncTable[player->cmd];
                     eventFunc(player, currentTrack);
                     
                     if (currentTrack->status == 0) {
@@ -473,7 +478,7 @@ void MP2KPlayerMain(void *voidPtrPlayer) {
         if ((track->status & MPT_FLG_EXIST) == 0 || (track->status & 0xF) == 0) {
             continue;
         }
-        TrkVolPitSet(player, track);
+                TrkVolPitSet((struct MusicPlayerInfo *)player, (struct MusicPlayerTrack *)track);
         for (struct MixerSource *chan = track->chan; chan != NULL; chan = chan->next) {
             if ((chan->status & 0xC7) == 0) {
                 ClearChain(chan);
@@ -512,7 +517,7 @@ void TrackStop(struct MP2KPlayerState *player, struct MP2KTrack *track) {
             if (chan->status != 0) {
                 u8 cgbType = chan->type & 0x7;
                 if (cgbType != 0) {
-                    struct SoundMixerState *mixer = SOUND_INFO_PTR;
+                    struct SoundMixerState *mixer = (struct SoundMixerState *)SOUND_INFO_PTR;
                     mixer->cgbNoteOffFunc(cgbType);
                 }
                 chan->status = 0;
@@ -539,7 +544,7 @@ void ChnVolSetAsm(struct MixerSource *chan, struct MP2KTrack *track) {
 }
 
 void MP2K_event_nxx(u8 clock, struct MP2KPlayerState *player, struct MP2KTrack *track) { // ply_note
-    struct SoundMixerState *mixer = SOUND_INFO_PTR;
+    struct SoundMixerState *mixer = (struct SoundMixerState *)SOUND_INFO_PTR;
     
     // A note can be anywhere from 1 to 4 bytes long. First is always the note length...
     track->gateTime = gClockTable[clock];
@@ -663,9 +668,9 @@ void MP2K_event_nxx(u8 clock, struct MP2KPlayerState *player, struct MP2KTrack *
     
     track->lfoDelayCounter = track->lfoDelay;
     if (track->lfoDelay != 0) {
-        ClearModM(track);
+        ClearModM((struct MusicPlayerTrack *)track);
     }
-    TrkVolPitSet(player, track);
+            TrkVolPitSet((struct MusicPlayerInfo *)player, (struct MusicPlayerTrack *)track);
     
     chan->gateTime = track->gateTime;
     chan->untransposedKey = track->key;
@@ -733,20 +738,20 @@ void MP2K_event_endtie(struct MP2KPlayerState *unused, struct MP2KTrack *track) 
 void MP2K_event_lfos(struct MP2KPlayerState *unused, struct MP2KTrack *track) {
     track->lfoSpeed = *(track->cmdPtr++);
     if (track->lfoSpeed == 0) {
-        ClearModM(track);
+        ClearModM((struct MusicPlayerTrack *)track);
     }
 }
 
 void MP2K_event_mod(struct MP2KPlayerState *unused, struct MP2KTrack *track) {
     track->modDepth = *(track->cmdPtr++);
     if (track->modDepth == 0) {
-        ClearModM(track);
+        ClearModM((struct MusicPlayerTrack *)track);
     }
 }
 
 void m4aSoundVSync(void)
 {
-    struct SoundMixerState *mixer = SOUND_INFO_PTR;
+    struct SoundMixerState *mixer = (struct SoundMixerState *)SOUND_INFO_PTR;
 #ifdef PORTABLE
     if(mixer->lockStatus-PLAYER_UNLOCKED <= 1)
     {
@@ -782,7 +787,6 @@ void m4aSoundVSync(void)
 #endif
 }
 
-#if 0
 // In:
 // - wav: pointer to sample
 // - key: the note after being transposed. If pitch bend puts it between notes, then the note below.
@@ -790,7 +794,7 @@ void m4aSoundVSync(void)
 // Out:
 // - The frequency in Hz at which the sample should be played back.
 
-u32 MidiKeyToFreq(struct WaveData2 *wav, u8 key, u8 pitch) {
+u32 MidiKeyToFreq(struct WaveData *wav, u8 key, u8 pitch) {
     if (key > 178) {
         key = 178;
         pitch = 255;
@@ -811,4 +815,3 @@ u32 MidiKeyToFreq(struct WaveData2 *wav, u8 key, u8 pitch) {
     u32 freq = SafeDereferenceU32(&wav->freq);
     return umul3232H32(freq, baseFreq1 + freqDifference);
 }
-#endif

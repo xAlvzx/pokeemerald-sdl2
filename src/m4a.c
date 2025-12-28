@@ -5,6 +5,8 @@
     #include "cgb_audio.h"
 #endif
 
+void RunMixerFrame(void);
+
 extern const u8 gCgb3Vol[];
 
 #ifndef PORTABLE
@@ -30,8 +32,8 @@ struct MusicPlayerTrack gMPlayTrack_SE2[9];
 struct MusicPlayerTrack gMPlayTrack_SE3[1];
 u8 gMPlayMemAccArea[0x10];
 
-void MP2K_event_nxx();
-void MP2KPlayerMain();
+void MP2K_event_nxx(u8 clock, struct MP2KPlayerState *player, struct MP2KTrack *track);
+void MP2KPlayerMain(void *voidPtrPlayer);
 
 u32 MidiKeyToFreq(struct WaveData *wav, u8 key, u8 fineAdjust)
 {
@@ -319,10 +321,10 @@ void MPlayExtender(struct CgbChannel *cgbChans)
     gMPlayJumpTable[33] = TrkVolPitSet;
 #else
     gMPlayJumpTable[8] = (void (*)(...))ply_memacc;
-    gMPlayJumpTable[17] = (void (*)(...))ply_lfos;
-    gMPlayJumpTable[19] = (void (*)(...))ply_mod;
+    gMPlayJumpTable[17] = (void (*)(...))MP2K_event_lfos;
+    gMPlayJumpTable[19] = (void (*)(...))MP2K_event_mod;
     gMPlayJumpTable[28] = (void (*)(...))ply_xcmd;
-    gMPlayJumpTable[29] = (void (*)(...))ply_endtie;
+    gMPlayJumpTable[29] = (void (*)(...))MP2K_event_endtie;
     gMPlayJumpTable[30] = (void (*)(...))SampleFreqSet;
     gMPlayJumpTable[31] = (void (*)(...))TrackStop;
     gMPlayJumpTable[32] = (void (*)(...))FadeOutBody;
@@ -408,11 +410,8 @@ void SoundInit(struct SoundInfo *soundInfo)
 
     soundInfo->maxChans = 8;
     soundInfo->masterVolume = 15;
-    soundInfo->plynote = MP2K_event_nxx;
-    soundInfo->CgbSound = DummyFunc;
-    soundInfo->CgbOscOff = (CgbOscOffFunc)DummyFunc;
-    soundInfo->MidiKeyToCgbFreq = (MidiKeyToCgbFreqFunc)DummyFunc;
-    soundInfo->ExtVolPit = (ExtVolPitFunc)DummyFunc;
+    soundInfo->plynote = (PlyNoteFunc)MP2K_event_nxx;
+    soundInfo->ExtVolPit = DummyFunc;
 
     MPlayJumpTableCopy(gMPlayJumpTable);
 
@@ -630,8 +629,8 @@ void MPlayOpen(struct MusicPlayerInfo *mplayInfo, struct MusicPlayerTrack *track
         soundInfo->MPlayMainHead = NULL;
     }
 
-    soundInfo->musicPlayerHead = (u32)mplayInfo;
-    soundInfo->MPlayMainHead = (u32)MP2KPlayerMain;
+    soundInfo->musicPlayerHead = mplayInfo;
+    soundInfo->MPlayMainHead = (MPlayMainFunc)MP2KPlayerMain;
     soundInfo->ident = ID_NUMBER;
     mplayInfo->ident = ID_NUMBER;
 }
@@ -670,7 +669,7 @@ void MPlayStart(struct MusicPlayerInfo *mplayInfo, struct SongHeader *songHeader
 
         while (i < songHeader->trackCount && i < mplayInfo->trackCount)
         {
-            TrackStop(mplayInfo, track);
+            TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
             track->flags = MPT_FLG_EXIST | MPT_FLG_START;
             track->chan = 0;
             track->cmdPtr = songHeader->part[i];
@@ -680,7 +679,7 @@ void MPlayStart(struct MusicPlayerInfo *mplayInfo, struct SongHeader *songHeader
 
         while (i < mplayInfo->trackCount)
         {
-            TrackStop(mplayInfo, track);
+            TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
             track->flags = 0;
             i++;
             track++;
@@ -709,7 +708,7 @@ void m4aMPlayStop(struct MusicPlayerInfo *mplayInfo)
 
     while (i > 0)
     {
-        TrackStop(mplayInfo, track);
+        TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
         i--;
         track++;
     }
@@ -749,7 +748,7 @@ void FadeOutBody(struct MusicPlayerInfo *mplayInfo)
             {
                 u32 val;
 
-                TrackStop(mplayInfo, track);
+                TrackStop((struct MP2KPlayerState *)mplayInfo, (struct MP2KTrack *)track);
 
                 val = TEMPORARY_FADE;
                 fadeOV = mplayInfo->fadeOV;

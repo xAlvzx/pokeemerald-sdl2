@@ -349,6 +349,9 @@ struct MusicPlayerInfo
     struct MusicPlayerInfo *musicPlayerNext;
 };
 
+typedef struct MusicPlayerInfo MP2KPlayerState;
+typedef struct MusicPlayerTrack MP2KTrack;
+
 struct MusicPlayer
 {
     struct MusicPlayerInfo *info;
@@ -439,7 +442,7 @@ void CgbOscOff(u8);
 void CgbModVol(struct CgbChannel *chan);
 u32 MidiKeyToCgbFreq(u8, u8, u8);
 void DummyFunc(void);
-void MPlayJumpTableCopy(void **mplayJumpTable);
+void MPlayJumpTableCopy(MPlayFunc *mplayJumpTable);
 void SampleFreqSet(u32 freq);
 void m4aSoundVSyncOn(void);
 void m4aSoundVSyncOff(void);
