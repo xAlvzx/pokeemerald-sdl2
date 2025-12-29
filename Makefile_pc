@@ -21,6 +21,7 @@ ifeq ($(TARGET_OS),Windows)
   LEADING_UNDERSCORE := -fleading-underscore
   # Preprocessing for Windows needs to be standard
   CPP_PIPED := $(PREFIX)cpp
+  PLATFORM_EXCLUDE := src/platform/sdl2.c
 else
   PREFIX :=
   SDL_DIR :=
@@ -29,8 +30,9 @@ else
   FIX_UNDERSCORE := true
   TARGET_EXE_EXT :=
   LEADING_UNDERSCORE :=
-  # Linux needs gcc -E -x c - to handle SIMD headers in pipes
+  # Linux needs gcc -E -x c -
   CPP_PIPED := $(CC) -E -x c -
+  PLATFORM_EXCLUDE := src/platform/win32.c
 endif
 
 OBJCOPY := $(PREFIX)objcopy
@@ -84,7 +86,7 @@ GCC_VER := $(shell $(CC) -dumpversion)
 ARCH_FLAGS := -m32 -march=i686 -msse2
 override CFLAGS += -Wno-trigraphs -Wimplicit -Wparentheses -Wunused $(ARCH_FLAGS) -std=gnu23 $(LEADING_UNDERSCORE) -Wno-unused-function -DPORTABLE -DNONMATCHING -D UBFIX -DMODERN=$(MODERN) -O3
 
-CPPFLAGS := $(ARCH_FLAGS) -iquote include -iquote $(GFLIB_SUBDIR) -Wno-trigraphs -D NONMATCHING -D PORTABLE -D $(TARGET_PLATFORM) -D $(TILE_RENDERER) -D MODERN=$(MODERN) -D UBFIX $(SDL_CFLAGS)
+CPPFLAGS := $(ARCH_FLAGS) -iquote include -iquote $(GFLIB_SUBDIR) -I src -Wno-trigraphs -D NONMATCHING -D PORTABLE -D $(TARGET_PLATFORM) -D $(TILE_RENDERER) -D MODERN=$(MODERN) -D UBFIX $(SDL_CFLAGS)
 
 LDFLAGS = -Map $(MAP)
 
@@ -265,7 +267,8 @@ CC1 := $(shell $(PREFIX)gcc --print-prog-name=cc1) -quiet
 
 $(C_BUILDDIR)/%.o : $(C_SUBDIR)/%.c $$(c_dep)
 ifeq ($(TARGET_OS),Linux)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	@$(CC) -E $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
+	@$(PREPROC) $(C_BUILDDIR)/$*.i charmap.txt | $(CC) $(CFLAGS) -c -x c -o $@ -
 else
 	@$(CPP) $(CPPFLAGS) $< -o $(C_BUILDDIR)/$*.i
 	@$(PREPROC) $(C_BUILDDIR)/$*.i charmap.txt | $(CC1) $(CFLAGS) -o $(C_BUILDDIR)/$*.s
@@ -281,7 +284,8 @@ endif
 
 $(GFLIB_BUILDDIR)/%.o : $(GFLIB_SUBDIR)/%.c $$(c_dep)
 ifeq ($(TARGET_OS),Linux)
-	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	@$(CC) -E $(CPPFLAGS) $< -o $(GFLIB_BUILDDIR)/$*.i
+	@$(PREPROC) $(GFLIB_BUILDDIR)/$*.i charmap.txt | $(CC) $(CFLAGS) -c -x c -o $@ -
 else
 	@$(CPP) $(CPPFLAGS) $< -o $(GFLIB_BUILDDIR)/$*.i
 	@$(PREPROC) $(GFLIB_BUILDDIR)/$*.i charmap.txt | $(CC1) $(CFLAGS) -o $(GFLIB_BUILDDIR)/$*.s
