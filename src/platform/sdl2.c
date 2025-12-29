@@ -31,7 +31,7 @@ SDL_GameController *gameController = NULL;
 SDL_sem *vBlankSemaphore;
 SDL_atomic_t isFrameAvailable;
 bool speedUp = false;
-unsigned int videoScale = 1;
+unsigned int videoScale = 6;
 bool isRunning = true;
 bool paused = false;
 double simTime = 0;
