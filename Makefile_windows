@@ -1,15 +1,8 @@
-# Native Linux build
-ifeq ($(shell uname),Linux)
-  PREFIX :=
-  CFLAGS := -m64 -fsanitize=undefined
-  PLATFORM_LIBS := -lSDL2 -lasound -lm -ldl -lpthread -lrt
-  SDL_DIR := /usr
-# Windows
-else
-  PREFIX := x86_64-w64-mingw32-
-  PLATFORM_LIBS := -lmingw32 -lSDL2main -lSDL2 -lwinmm -lxinput
-  SDL_DIR := /home/pablo/Documents/GitHub/pokeemerald-sdl2/SDL2-2.32.8/i686-w64-mingw32
-endif
+# Windows cross-build
+PREFIX := x86_64-w64-mingw32-
+CFLAGS := -m64
+PLATFORM_LIBS := -lmingw32 -lSDL2main -lSDL2 -lwinmm -lxinput
+SDL_DIR := SDL2-2.32.8/x86_64-w64-mingw32
 
 OBJCOPY := $(PREFIX)objcopy
 CC := $(PREFIX)gcc
@@ -22,11 +15,10 @@ FIX_UNDERSCORE := $(OBJCOPY)
 export CPP := $(PREFIX)gcc -E
 export LD := $(PREFIX)ld
 
-ifeq ($(OS),Windows_NT)
-EXE := .exe
-else
-EXE :=
-endif
+# Tools are running on Linux, so they don't have .exe extension
+TOOL_EXE := 
+# The final ROM/Executable runs on Windows, so it needs .exe
+ROM_EXE := .exe
 
 all: rom
 
@@ -39,9 +31,6 @@ TARGET_PLATFORM := PLATFORM_SDL2
 TILE_RENDERER := RENDERER_NONE
 
 SHELL := /bin/bash -o pipefail
-
-#ELF = $(ROM:.exe=.elf)
-#MAP = $(ROM:.exe=.map)
 
 C_SUBDIR = src
 GFLIB_SUBDIR = gflib
@@ -62,21 +51,17 @@ MID_BUILDDIR = $(OBJ_DIR)/$(MID_SUBDIR)
 
 ASFLAGS := --64 --defsym MODERN=$(MODERN) --defsym PORTABLE=1 --defsym VER_64BIT=1 --defsym UBFIX=1
 
-GCC_VER := $(shell $(CC) -dumpversion)
+GCC_VER := $(shell $(CC) -dumpversion) 
 
 CC1 	:= $(shell $(PREFIX)gcc --print-prog-name=cc1) -quiet
 override CFLAGS += -Wno-trigraphs -Wimplicit -Wparentheses -Wunused -Wno-unused-variable -m64 -fno-dce -fno-builtin -Wno-unused-function -DPORTABLE -DUBFIX -DMODERN=$(MODERN)
 CPPFLAGS := -iquote include -iquote $(GFLIB_SUBDIR) -Wno-trigraphs -DPORTABLE -DMODERN=$(MODERN) -DUBFIX
-ifeq ($(shell uname),Linux)
-	ROM		:= pokeemerald-linux
-	CPPFLAGS += -I/usr/include/SDL2 -D_REENTRANT
-else
-	ROM		:= pokeemerald64.exe
-	CPPFLAGS += -I$(SDL_DIR)/include -L$(SDL_DIR)/lib
-endif
-OBJ_DIR	:= build/pc
+ROM		:= Pokemon-Emerald$(ROM_EXE)
+CPPFLAGS += -I$(SDL_DIR)/include -L$(SDL_DIR)/lib
 
-CPPFLAGS := -iquote include -iquote $(GFLIB_SUBDIR) -Wno-trigraphs -D NONMATCHING -D PORTABLE -D $(TARGET_PLATFORM) -D $(TILE_RENDERER) -D VER_64BIT -D MODERN=$(MODERN) -D UBFIX  -I$(SDL_DIR)/include -L$(SDL_DIR)/lib
+OBJ_DIR	:= build/windows
+
+CPPFLAGS += -D NONMATCHING -D $(TARGET_PLATFORM) -D $(TILE_RENDERER) -D VER_64BIT  -I$(SDL_DIR)/include -L$(SDL_DIR)/lib
 
 LDFLAGS = -Map ../../$(MAP)
 
@@ -105,15 +90,15 @@ AUTO_GEN_TARGETS :=
 include make_tools.mk
 
 SHA1 := $(shell { command -v sha1sum || command -v shasum; } 2>/dev/null) -c
-GFX := $(TOOLS_DIR)/gbagfx/gbagfx$(EXE)
-AIF := $(TOOLS_DIR)/aif2pcm/aif2pcm$(EXE)
-MID := $(TOOLS_DIR)/mid2agb/mid2agb$(EXE)
-SCANINC := $(TOOLS_DIR)/scaninc/scaninc$(EXE)
-PREPROC := $(TOOLS_DIR)/preproc/preproc$(EXE)
-RAMSCRGEN := $(TOOLS_DIR)/ramscrgen/ramscrgen$(EXE)
-FIX := $(TOOLS_DIR)/gbafix/gbafix$(EXE)
-MAPJSON := $(TOOLS_DIR)/mapjson/mapjson$(EXE)
-JSONPROC := $(TOOLS_DIR)/jsonproc/jsonproc$(EXE)
+GFX := $(TOOLS_DIR)/gbagfx/gbagfx$(TOOL_EXE)
+AIF := $(TOOLS_DIR)/aif2pcm/aif2pcm$(TOOL_EXE)
+MID := $(TOOLS_DIR)/mid2agb/mid2agb$(TOOL_EXE)
+SCANINC := $(TOOLS_DIR)/scaninc/scaninc$(TOOL_EXE)
+PREPROC := $(TOOLS_DIR)/preproc/preproc$(TOOL_EXE)
+RAMSCRGEN := $(TOOLS_DIR)/ramscrgen/ramscrgen$(TOOL_EXE)
+FIX := $(TOOLS_DIR)/gbafix/gbafix$(TOOL_EXE)
+MAPJSON := $(TOOLS_DIR)/mapjson/mapjson$(TOOL_EXE)
+JSONPROC := $(TOOLS_DIR)/jsonproc/jsonproc$(TOOL_EXE)
 
 MAKEFLAGS += --no-print-directory
 
@@ -189,7 +174,7 @@ pc: rom
 tools: $(TOOLDIRS)
 
 $(TOOLDIRS):
-	@$(MAKE) -C $@ CC=$(HOSTCC) CXX=$(HOSTCXX)
+	@$(MAKE) -C $@ CC=$(HOSTCC) CXX=$(HOSTCXX) 
 
 rom: $(ROM)
 ifeq ($(COMPARE),1)
@@ -211,15 +196,15 @@ mostlyclean: tidy
 	find $(DATA_ASM_SUBDIR)/maps \( -iname 'connections.inc' -o -iname 'events.inc' -o -iname 'header.inc' \) -exec rm {} +
 	rm -f $(AUTO_GEN_TARGETS)
 
-tidy:
-	rm -f $(ROM)$(EXE) $(ELF) $(MAP)
+tidy: 
+	rm -f $(ROM)$(ROM_EXE) $(ELF) $(MAP)
 	rm -r $(OBJ_DIR)
 ifeq ($(MODERN),0)
 	@$(MAKE) tidy MODERN=1
 endif
 
 clean-platform:
-	rm -f $(ROM)$(EXE) $(ELF) $(MAP)
+	rm -f $(ROM)$(ROM_EXE) $(ELF) $(MAP)
 	rm -r $(OBJ_DIR)/src/platform
 
 include graphics_file_rules.mk
