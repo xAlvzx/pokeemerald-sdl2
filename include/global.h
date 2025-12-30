@@ -48,7 +48,11 @@ void DoBorderChange(u8 border, u32 speed);
 
 // to help in decompiling
 #define asm_unified(x) asm(".syntax unified\n" x "\n.syntax divided")
+#ifdef PORTABLE
+#define NAKED
+#else
 #define NAKED __attribute__((naked))
+#endif
 
 // IDE support
 #if defined (__APPLE__) || defined (__CYGWIN__) || defined(__INTELLISENSE__) || defined (_MSC_VER)

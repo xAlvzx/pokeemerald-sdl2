@@ -39,3 +39,5 @@ prefabs.json
 *.diff
 *.sym
 *.js
+/SDL2-2.32.8
+pokeemerald

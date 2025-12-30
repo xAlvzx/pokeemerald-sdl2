@@ -98,7 +98,7 @@ struct SoundMixerState {
     void (*cgbMixerFunc)(void);
     void (*cgbNoteOffFunc)(u8 chan);
     u32 (*cgbCalcFreqFunc)(u8 chan, u8 key, u8 pitch);
-    void (**mp2kEventFuncTable)();
+    void (**mp2kEventFuncTable)(struct MP2KPlayerState *, struct MP2KTrack *);
     void (*mp2kEventNxxFunc)(u8 clock, struct MP2KPlayerState *player, struct MP2KTrack *track);
     void *reserved1; // In poke* this is called "ExtVolPit"
     u8 gap2[16];

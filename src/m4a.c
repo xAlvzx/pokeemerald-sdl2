@@ -23,48 +23,48 @@ struct MusicPlayerTrack gMPlayTrack_SE3[1];
 u8 gMPlayMemAccArea[0x10];
 
 static MPlayFunc gMPlayJumpTable[36] = {
-    MP2K_event_fine,
-    MP2K_event_goto,
-    MP2K_event_patt,
-    MP2K_event_pend,
-    MP2K_event_rept,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    ply_memacc, // was MP2K_event_fine
-    MP2K_event_prio,
-    MP2K_event_tempo,
-    MP2K_event_keysh,
-    MP2K_event_voice,
-    MP2K_event_vol,
-    MP2K_event_pan,
-    MP2K_event_bend,
-    MP2K_event_bendr,
-    MP2K_event_lfos,
-    MP2K_event_lfodl,
-    MP2K_event_mod,
-    MP2K_event_modt,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_tune,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_fine,
-    MP2K_event_port,
-    ply_xcmd, // was MP2K_event_fine
-    MP2K_event_endtie,
-    SampleFreqSet,
-    TrackStop,
-    FadeOutBody,
-    TrkVolPitSet,
-    MP2KClearChain,
-    SoundMainBTM
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_goto,
+    (MPlayFunc)MP2K_event_patt,
+    (MPlayFunc)MP2K_event_pend,
+    (MPlayFunc)MP2K_event_rept,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)ply_memacc, // was MP2K_event_fine
+    (MPlayFunc)MP2K_event_prio,
+    (MPlayFunc)MP2K_event_tempo,
+    (MPlayFunc)MP2K_event_keysh,
+    (MPlayFunc)MP2K_event_voice,
+    (MPlayFunc)MP2K_event_vol,
+    (MPlayFunc)MP2K_event_pan,
+    (MPlayFunc)MP2K_event_bend,
+    (MPlayFunc)MP2K_event_bendr,
+    (MPlayFunc)MP2K_event_lfos,
+    (MPlayFunc)MP2K_event_lfodl,
+    (MPlayFunc)MP2K_event_mod,
+    (MPlayFunc)MP2K_event_modt,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_tune,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_fine,
+    (MPlayFunc)MP2K_event_port,
+    (MPlayFunc)ply_xcmd, // was MP2K_event_fine
+    (MPlayFunc)MP2K_event_endtie,
+    (MPlayFunc)SampleFreqSet,
+    (MPlayFunc)TrackStop,
+    (MPlayFunc)FadeOutBody,
+    (MPlayFunc)TrkVolPitSet,
+    (MPlayFunc)MP2KClearChain,
+    (MPlayFunc)SoundMainBTM
 };
 
 bool8 gSoundInit = FALSE;
 
-void MP2K_event_nxx();
-void MP2KPlayerMain();
+void MP2K_event_nxx(u32, struct MusicPlayerInfo *, struct MusicPlayerTrack *);
+void MP2KPlayerMain(struct MusicPlayerInfo *);
 
 void MPlayContinue(struct MusicPlayerInfo *mplayInfo)
 {

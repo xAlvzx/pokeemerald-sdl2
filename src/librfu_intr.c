@@ -7,7 +7,7 @@ static u16 handshake_wait(u16 slot);
 static void STWI_set_timer_in_RAM(u8 count);
 static void STWI_stop_timer_in_RAM(void);
 static void STWI_init_slave(void);
-static void Callback_Dummy_M(int reqCommandId, int error, void (*callbackM)());
+static void Callback_Dummy_M(int reqCommandId, int error, void (*callbackM)(u16, u16, ...));
 static void Callback_Dummy_S(u16 reqCommandId, void (*callbackS)(u16));
 static void Callback_Dummy_ID(void (*callbackId)(void));
 
@@ -388,10 +388,13 @@ static void STWI_init_slave(void)
 }
 
 NAKED
-static void Callback_Dummy_M(int reqCommandId, int error, void (*callbackM)())
+static void Callback_Dummy_M(int reqCommandId, int error, void (*callbackM)(u16, u16, ...))
 {
 #ifndef PORTABLE
     asm("bx r2");
+#else
+    if (callbackM != NULL)
+        callbackM(reqCommandId, error);
 #endif
 }
 
@@ -400,6 +403,9 @@ static void Callback_Dummy_S(u16 reqCommandId, void (*callbackS)(u16))
 {
 #ifndef PORTABLE
     asm("bx r1");
+#else
+    if (callbackS != NULL)
+        callbackS(reqCommandId);
 #endif
 }
 
@@ -408,5 +414,8 @@ static void Callback_Dummy_ID(void (*callbackId)(void))
 {
 #ifndef PORTABLE
     asm("bx r0");
+#else
+    if (callbackId != NULL)
+        callbackId();
 #endif
 }
