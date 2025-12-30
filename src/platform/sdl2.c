@@ -6,7 +6,6 @@
 
 #ifdef _WIN32
 #include <windows.h>
-#include <xinput.h>
 #endif
 
 #include <SDL2/SDL.h>
@@ -403,7 +402,7 @@ int main(int argc, char **argv)
 
     ReadSaveFile("pokeemerald.sav");
 
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
     {
         DBGPRINTF("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
@@ -634,6 +633,39 @@ case KEY_##key:  keys |= key; break;
 
 static u16 keys;
 
+static SDL_GameController *sdlController = NULL;
+
+static void OpenController(int device_index)
+{
+    if (SDL_IsGameController(device_index))
+    {
+        if (sdlController)
+        {
+            SDL_GameControllerClose(sdlController);
+            sdlController = NULL;
+        }
+        sdlController = SDL_GameControllerOpen(device_index);
+        if (sdlController)
+        {
+            printf("Opened game controller: %s\n", SDL_GameControllerName(sdlController));
+        }
+        else
+        {
+            fprintf(stderr, "Could not open game controller %d: %s\n", device_index, SDL_GetError());
+        }
+    }
+}
+
+static void CloseController(void)
+{
+    if (sdlController)
+    {
+        printf("Closed game controller: %s\n", SDL_GameControllerName(sdlController));
+        SDL_GameControllerClose(sdlController);
+        sdlController = NULL;
+    }
+}
+
 void ProcessEvents(void)
 {
     SDL_Event event;
@@ -644,6 +676,22 @@ void ProcessEvents(void)
         {
         case SDL_QUIT:
             isRunning = false;
+            break;
+        case SDL_CONTROLLERDEVICEADDED:
+            if (!sdlController)
+            {
+                OpenController(event.cdevice.which);
+            }
+            break;
+        case SDL_CONTROLLERDEVICEREMOVED:
+            if (sdlController)
+            {
+                SDL_Joystick *joy = SDL_GameControllerGetJoystick(sdlController);
+                if (joy && SDL_JoystickInstanceID(joy) == event.cdevice.which)
+                {
+                    CloseController();
+                }
+            }
             break;
         case SDL_KEYUP:
             switch (event.key.keysym.sym)
@@ -799,58 +847,54 @@ void ProcessEvents(void)
     }
 }
 
-#ifdef _WIN32
-#define STICK_THRESHOLD 0.5f
-u16 GetXInputKeys()
+#define AXIS_THRESHOLD 8000
+
+static u16 GetGameControllerKeys(void)
 {
-    XINPUT_STATE state;
-    ZeroMemory(&state, sizeof(XINPUT_STATE));
+    u16 controllerKeys = 0;
 
-    DWORD dwResult = XInputGetState(0, &state);
-    u16 xinputKeys = 0;
+    if (!sdlController)
+        return 0;
 
-    if (dwResult == ERROR_SUCCESS)
+    // Buttons
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_A)) controllerKeys |= A_BUTTON;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_B)) controllerKeys |= B_BUTTON;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_START)) controllerKeys |= START_BUTTON;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_BACK)) controllerKeys |= SELECT_BUTTON;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_LEFTSHOULDER)) controllerKeys |= L_BUTTON;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER)) controllerKeys |= R_BUTTON;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_DPAD_UP)) controllerKeys |= DPAD_UP;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_DPAD_DOWN)) controllerKeys |= DPAD_DOWN;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_DPAD_LEFT)) controllerKeys |= DPAD_LEFT;
+    if (SDL_GameControllerGetButton(sdlController, SDL_CONTROLLER_BUTTON_DPAD_RIGHT)) controllerKeys |= DPAD_RIGHT;
+
+    // Analog Sticks (Left Stick mapped to D-Pad)
+    Sint16 axisX = SDL_GameControllerGetAxis(sdlController, SDL_CONTROLLER_AXIS_LEFTX);
+    Sint16 axisY = SDL_GameControllerGetAxis(sdlController, SDL_CONTROLLER_AXIS_LEFTY);
+
+    if (axisY < -AXIS_THRESHOLD) controllerKeys |= DPAD_UP;
+    else if (axisY > AXIS_THRESHOLD) controllerKeys |= DPAD_DOWN;
+
+    if (axisX < -AXIS_THRESHOLD) controllerKeys |= DPAD_LEFT;
+    else if (axisX > AXIS_THRESHOLD) controllerKeys |= DPAD_RIGHT;
+    
+    // Right Trigger for Speedup
+    if (SDL_GameControllerGetAxis(sdlController, SDL_CONTROLLER_AXIS_TRIGGERRIGHT) > AXIS_THRESHOLD)
     {
-        /* A */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) >> 12;
-        /* B */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_X) >> 13;
-        /* Start */  xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_START) >> 1;
-        /* Select */ xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK) >> 3;
-        /* L */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) << 1;
-        /* R */      xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) >> 1;
-        /* Up */     xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) << 6;
-        /* Down */   xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) << 6;
-        /* Left */   xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) << 3;
-        /* Right */  xinputKeys |= (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) << 1;
-
-
-        /* Control Stick */
-        float xAxis = (float)state.Gamepad.sThumbLX / (float)SHRT_MAX;
-        float yAxis = (float)state.Gamepad.sThumbLY / (float)SHRT_MAX;
-
-        if (xAxis < -STICK_THRESHOLD) xinputKeys |= DPAD_LEFT;
-        if (xAxis >  STICK_THRESHOLD) xinputKeys |= DPAD_RIGHT;
-        if (yAxis < -STICK_THRESHOLD) xinputKeys |= DPAD_DOWN;
-        if (yAxis >  STICK_THRESHOLD) xinputKeys |= DPAD_UP;
-
-
-        /* Speedup */
-        // Note: 'speedup' variable is only (un)set on keyboard input
-        double oldTimeScale = timeScale;
-        timeScale = (state.Gamepad.bRightTrigger > 0x80 || speedUp) ? 5.0 : 1.0;
+         if (!speedUp) timeScale = 5.0;
+    }
+    else if (!speedUp)
+    {
+         timeScale = 1.0;
     }
 
-    return xinputKeys;
+    return controllerKeys;
 }
-#endif // _WIN32
 
 u16 Platform_GetKeyInput(void)
 {
-#ifdef _WIN32
-    u16 gamepadKeys = GetXInputKeys();
-    return (gamepadKeys != 0) ? gamepadKeys : keys;
-#endif
-
-    return keys;
+    u16 gamepadKeys = GetGameControllerKeys();
+    return keys | gamepadKeys;
 }
 #define mosaicBGEffectX (gpu.mosaic & 0xF)
 #define mosaicBGEffectY ((gpu.mosaic >> 4) & 0xF)
