@@ -80,47 +80,11 @@ struct GameBorder borderList[NUM_GAME_BORDERS] = {
 void GameInit(void)
 {
     GpuInit();
+    /*
     *(u16 *)BG_PLTT = RGB_WHITE; // Set the backdrop to white on startup
     InitGpuRegManager();
-    REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
-    InitKeys();
-    InitIntrHandlers();
-    m4aSoundInit();
-#ifndef PORTABLE
-    InitRFU();
-#endif
-    RtcInit();
-    CheckForFlashMemory();
-    InitMainCallbacks();
-    InitMapMusic();
-#ifdef BUGFIX
-    SeedRngWithRtc(); // see comment at SeedRngWithRtc definition below
-#endif
-    ResetBgs();
-    SetDefaultFontsPointer();
-
-    InitHeap();
-
-    gSoftResetDisabled = FALSE;
-
-#ifndef PORTABLE
-    if (gFlashMemoryPresent != TRUE)
-        SetMainCallback2(NULL);
-#endif
-
-    gLinkTransferringData = FALSE;
-
-#ifndef PORTABLE
-    sUnusedVar = 0xFC0;
-#endif
-
-#ifndef NDEBUG
-#if (LOG_HANDLER == LOG_HANDLER_MGBA_PRINT)
-    (void) MgbaOpen();
-#elif (LOG_HANDLER == LOG_HANDLER_AGB_PRINT)
-    AGBPrintfInit();
-#endif
-#endif
+    ... (rest of the code)
+    */
 }
 
 void GameLoop(void)

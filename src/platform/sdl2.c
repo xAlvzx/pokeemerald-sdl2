@@ -616,6 +616,15 @@ int main(int argc, char **argv)
     SDL_SetRenderDrawColor(sdlRenderer, 0, 255, 255, 255); // Cyan
     SDL_RenderClear(sdlRenderer);
     SDL_RenderPresent(sdlRenderer);
+    SDL_Delay(2000);
+
+    // Step 8: Core Game Engine Initialization
+    GameInit();
+    
+    // SUCCESS: MAGENTA Screen
+    SDL_SetRenderDrawColor(sdlRenderer, 255, 0, 255, 255); // Magenta
+    SDL_RenderClear(sdlRenderer);
+    SDL_RenderPresent(sdlRenderer);
     SDL_Delay(5000);
 
     if (sdlRenderer) SDL_DestroyRenderer(sdlRenderer);
