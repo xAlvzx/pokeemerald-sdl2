@@ -266,7 +266,7 @@ static bool8 SetResolution(s32 width, s32 height)
     }
 
 #ifdef __SWITCH__
-    Uint32 format = SDL_PIXELFORMAT_RGBA8888;
+    Uint32 format = SDL_PIXELFORMAT_ABGR8888;
     
     // Resize intermediate buffer
     size_t newSize = displayWidth * displayHeight * sizeof(uint16_t);
@@ -307,7 +307,11 @@ static bool8 InitVideo(void)
 
     int sdlRendererFlags = 0;
 
+#ifdef __SWITCH__
+    videoScale = 3;
+#else
     videoScale = 1;
+#endif
 
     scrW = BASE_DISPLAY_WIDTH;
     scrH = BASE_DISPLAY_HEIGHT;
@@ -343,7 +347,7 @@ static bool8 InitVideo(void)
 
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sdlRenderer);
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
     SDL_SetWindowMinimumSize(sdlWindow, BASE_DISPLAY_WIDTH, BASE_DISPLAY_HEIGHT);
 
     if (SetResolution(scrW, scrH) == FALSE)
@@ -1984,18 +1988,22 @@ void DrawFrame(void *pixels)
 
 #ifdef __SWITCH__
     // Convert 15-bit ABGR to 32-bit RGBA
-    DBGPRINTF("DrawFrame: Starting 32-bit conversion...\n");
     uint32_t *dest32 = (uint32_t *)pixels;
     int totalPixels = displayWidth * displayHeight;
     for (int k = 0; k < totalPixels; k++)
     {
         uint16_t c = renderTarget[k];
-        uint8_t r = (c & 0x1F) << 3;
-        uint8_t g = ((c >> 5) & 0x1F) << 3;
-        uint8_t b = ((c >> 10) & 0x1F) << 3;
-        dest32[k] = (0xFF000000) | (b << 16) | (g << 8) | r;
+        uint8_t r5 = (c & 0x1F);
+        uint8_t g5 = ((c >> 5) & 0x1F);
+        uint8_t b5 = ((c >> 10) & 0x1F);
+        
+        uint8_t r = (r5 << 3) | (r5 >> 2);
+        uint8_t g = (g5 << 3) | (g5 >> 2);
+        uint8_t b = (b5 << 3) | (b5 >> 2);
+        
+        // SDL_PIXELFORMAT_ABGR8888: A=24, B=16, G=8, R=0
+        dest32[k] = (0xFF << 24) | (b << 16) | (g << 8) | r;
     }
-    DBGPRINTF("DrawFrame: Conversion done.\n");
 #endif
 }
 
