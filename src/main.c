@@ -80,9 +80,22 @@ struct GameBorder borderList[NUM_GAME_BORDERS] = {
 void GameInit(void)
 {
     GpuInit();
-    /*
     *(u16 *)BG_PLTT = RGB_WHITE; // Set the backdrop to white on startup
     InitGpuRegManager();
+    REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
+    InitKeys();
+    InitIntrHandlers();
+    RtcInit();
+    CheckForFlashMemory();
+    ResetBgs();
+    // SetDefaultFontsPointer();
+
+    InitHeap();
+
+    gSoftResetDisabled = FALSE;
+    /*
+    InitMainCallbacks();
+    InitMapMusic();
     ... (rest of the code)
     */
 }
