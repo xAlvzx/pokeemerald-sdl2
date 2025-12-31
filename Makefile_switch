@@ -49,11 +49,16 @@ CFLAGS += -DPLATFORM_SDL2 -DMODERN=1 -DPORTABLE -DUBFIX -D_REENTRANT -DSDL_MAIN_
 # Includes for project
 CFLAGS += -iquote include -iquote gflib -I$(DEVKITPRO)/portlibs/switch/include/SDL2
 
+# Build config
+OBJ_DIR := build/switch
+
 # Application Metadata for NRO
 APP_TITLE := Pokemon Emerald
 APP_AUTHOR := Pret & Contributors
 APP_VERSION := 1.0.0
+APP_TITLEID := 05B04B4D4E454D00
 
+NACP_FILE := $(OBJ_DIR)/pokeemerald.nacp
 EXE := .elf
 NRO := pokeemerald.nro
 MAP := pokeemerald.map
@@ -62,8 +67,7 @@ LDFLAGS := -specs=$(LIBNX)/switch.specs -g $(ARCH) -Wl,-Map,$(MAP) -Wl,--gc-sect
 LDFLAGS += -L$(LIBNX)/lib -L$(DEVKITPRO)/portlibs/switch/lib
 LDFLAGS += -lSDL2 -lEGL -lGLESv2 -lglapi -ldrm_nouveau -lnx -lm
 
-# Build config
-OBJ_DIR := build/switch
+# Subdirectories
 C_SUBDIR = src
 GFLIB_SUBDIR = gflib
 ASM_SUBDIR = asm
@@ -123,20 +127,20 @@ SUBDIRS := $(sort $(dir $(OBJS)))
 
 all: $(NRO)
 
-$(NRO): $(OBJ_DIR)/$(EXE) $(APP_TITLE).nacp icon.png
+$(NRO): $(OBJ_DIR)/$(EXE) $(NACP_FILE) icon.png
 	@echo "Creating RomFS..."
 	@mkdir -p $(OBJ_DIR)/romfs/assets
 	@cp -r assets/* $(OBJ_DIR)/romfs/assets/
 	@echo "Building NRO..."
-	@$(DEVKITTOOLS)/bin/elf2nro $< $@ --nacp=$(APP_TITLE).nacp --romfsdir=$(OBJ_DIR)/romfs --icon=icon.png
+	@$(DEVKITTOOLS)/bin/elf2nro $< $@ --nacp=$(NACP_FILE) --romfsdir=$(OBJ_DIR)/romfs --icon=icon.png
 
 $(OBJ_DIR)/$(EXE): $(OBJS)
 	@echo "Linking $(EXE)..."
 	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 # NACP generation
-$(APP_TITLE).nacp:
-	@$(DEVKITTOOLS)/bin/nacptool --create "$(APP_TITLE)" "$(APP_AUTHOR)" "$(APP_VERSION)" $@
+$(NACP_FILE):
+	@$(DEVKITTOOLS)/bin/nacptool --create "$(APP_TITLE)" "$(APP_AUTHOR)" "$(APP_VERSION)" $@ --titleid=$(APP_TITLEID)
 
 # --- Compilation Rules ---
 
@@ -207,7 +211,7 @@ include songs.mk
 generated: $(AUTO_GEN_TARGETS)
 
 clean:
-	rm -rf $(OBJ_DIR) $(NRO) $(APP_TITLE).nacp
+	rm -rf $(OBJ_DIR) $(NRO) $(NACP_FILE)
 
 # Tools Targets
 tools: $(TOOLDIRS)

@@ -29,9 +29,8 @@ void SwitchLog(const char* fmt, ...) {
 #include "global.h"
 #include "platform.h"
 
-// ... (rest of includes)
-
 #ifdef __SWITCH__
+#undef DBGPRINTF
 #define DBGPRINTF(...) SwitchLog(__VA_ARGS__)
 #else
 #define DBGPRINTF(...) printf(__VA_ARGS__)
@@ -77,6 +76,9 @@ static unsigned currentBorder = 0xFF;
 static unsigned lastBorder = 0xFF;
 
 static struct DisplayBorder *GetBorder(unsigned which);
+
+static uint16_t *borderImageBuffer = NULL;
+static size_t borderImageSize = 0;
 
 struct scanlineData {
     uint16_t layers[NUM_BACKGROUNDS][DISPLAY_WIDTH];
@@ -337,7 +339,7 @@ static bool8 InitVideo(void)
 
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sdlRenderer);
-    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
     SDL_SetWindowMinimumSize(sdlWindow, BASE_DISPLAY_WIDTH, BASE_DISPLAY_HEIGHT);
 
     if (SetResolution(scrW, scrH) == FALSE)
@@ -426,12 +428,9 @@ static void LoadBorders(void)
 
         u8 *data;
 
-        unsigned char **palette = NULL;
-        unsigned int *paletteLength = NULL;
-
         if (src->paletteIndex != -1)
         {
-            data = stbi_load(path, &width, &height, &components_per_pixel, 4, &border->palette, &border->paletteLength);
+            data = stbi_load(path, &width, &height, &components_per_pixel, 4, &border->palette, (int *)&border->paletteLength);
             if (!data)
                 continue;
             border->paletteIndex = border->palette ? src->paletteIndex : 0;
@@ -461,7 +460,10 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef __SWITCH__
-    romfsInit();
+    Result rc = romfsInit();
+    if (R_FAILED(rc)) {
+        DBGPRINTF("romfsInit() failed: 0x%x\n", rc);
+    }
     mkdir("sdmc:/switch", 0777);
     mkdir(SAVE_DIR, 0777);
 #endif
@@ -583,6 +585,11 @@ int main(int argc, char **argv)
 
     FreeBorders();
 
+    if (intermediateBuffer)
+        free(intermediateBuffer);
+    if (borderImageBuffer)
+        free(borderImageBuffer);
+
     CloseSaveFile();
 
     SDL_DestroyWindow(sdlWindow);
@@ -600,20 +607,32 @@ static void ReadSaveFile(char *path)
         sSaveFile = fopen(path, "w+b");
     }
 
-    fseek(sSaveFile, 0, SEEK_END);
-    int fileSize = ftell(sSaveFile);
-    fseek(sSaveFile, 0, SEEK_SET);
-
-    // Only read as many bytes as fit inside the buffer
-    // or as many bytes as are in the file
-    int bytesToRead = (fileSize < sizeof(FLASH_BASE)) ? fileSize : sizeof(FLASH_BASE);
-
-    int bytesRead = fread(FLASH_BASE, 1, bytesToRead, sSaveFile);
-
-    // Fill the buffer if the savefile was just created or smaller than the buffer itself
-    for (int i = bytesRead; i < sizeof(FLASH_BASE); i++)
+    if (sSaveFile != NULL)
     {
-        FLASH_BASE[i] = 0xFF;
+        fseek(sSaveFile, 0, SEEK_END);
+        int fileSize = ftell(sSaveFile);
+        fseek(sSaveFile, 0, SEEK_SET);
+
+        // Only read as many bytes as fit inside the buffer
+        // or as many bytes as are in the file
+        int bytesToRead = (fileSize < sizeof(FLASH_BASE)) ? fileSize : sizeof(FLASH_BASE);
+
+        int bytesRead = fread(FLASH_BASE, 1, bytesToRead, sSaveFile);
+
+        // Fill the buffer if the savefile was just created or smaller than the buffer itself
+        for (int i = bytesRead; i < sizeof(FLASH_BASE); i++)
+        {
+            FLASH_BASE[i] = 0xFF;
+        }
+    }
+    else
+    {
+        // Fallback: Fill buffer with 0xFF if file couldn't be opened
+        for (int i = 0; i < sizeof(FLASH_BASE); i++)
+        {
+            FLASH_BASE[i] = 0xFF;
+        }
+        fprintf(stderr, "Warning: Could not open save file %s\n", path);
     }
 }
 
@@ -1355,7 +1374,7 @@ static bool alphaBlendSelectTargetB(struct scanlineData* scanline, uint16_t* col
             
         for (unsigned int blndprsub = prsub; blndprsub < scanline->prioritySortedBgsCount[blndprnum]; blndprsub++)
         {
-            char currLayer = scanline->prioritySortedBgs[blndprnum][blndprsub];
+            int currLayer = (unsigned char)scanline->prioritySortedBgs[blndprnum][blndprsub];
             if (getAlphaBit( scanline->layers[currLayer][pixelpos] ) == 1 && gpu.blendControl & ( 1 << (8 + currLayer)) && isbgEnabled(currLayer))
             {
                 *colorOutput = scanline->layers[currLayer][pixelpos];
@@ -1402,8 +1421,6 @@ static bool winCheckHorizontalBounds(u16 left, u16 right, u16 xpos)
 static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool windowsEnabled)
 {
     int i;
-    unsigned int x;
-    unsigned int y;
     void *objtiles = gpu.spriteGfxData;
     unsigned int blendMode = (gpu.blendControl >> 6) & 3;
     bool winShouldBlendPixel = true;
@@ -1521,8 +1538,6 @@ static void DrawSprites(struct scanlineData* scanline, uint16_t vcount, bool win
         if (vcount >= (y - half_height) && vcount < (y + half_height))
         {
             int local_y = (oam->mosaic == 1) ? applySpriteVerticalMosaicEffect(vcount) - y : vcount - y;
-            int number  = oam->tileNum;
-            int palette = oam->paletteNum;
             bool flipX  = !isAffine && ((oam->matrixNum >> 3) & 1);
             bool flipY  = !isAffine && ((oam->matrixNum >> 4) & 1);
             bool is8BPP  = oam->bpp & 1;
@@ -1673,7 +1688,7 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
 
         scanline.bgtoprio[bgnum] = priority;
 
-        char priorityCount = scanline.prioritySortedBgsCount[priority];
+        int priorityCount = (unsigned char)scanline.prioritySortedBgsCount[priority];
         scanline.prioritySortedBgs[priority][priorityCount] = bgnum;
         scanline.prioritySortedBgsCount[priority]++;
     }
@@ -1863,7 +1878,6 @@ static uint16_t GetBackdropColor(void)
 void DrawFrame(void *pixels)
 {
     u32 i;
-    u32 j;
     static uint16_t scanline[DISPLAY_WIDTH];
     uint16_t backdropColor = GetBackdropColor();
 
@@ -2061,9 +2075,6 @@ static struct DisplayBorder *GetBorder(unsigned which)
 
     return border;
 }
-
-static uint16_t *borderImageBuffer = NULL;
-static size_t borderImageSize = 0;
 
 static void DrawBorderPixels(uint16_t *image, struct DisplayBorder *border, SDL_Rect rect, int repeatXY, bool doTransparency, float opacity)
 {
