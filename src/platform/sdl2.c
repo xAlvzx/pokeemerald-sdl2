@@ -562,19 +562,36 @@ int main(int argc, char **argv)
     }
 
     // If we are here, Video is OK.
-    // Show a GREEN screen to verify.
+    // Show a GREEN screen to verify Video Init.
     SDL_SetRenderDrawColor(sdlRenderer, 0, 255, 0, 255); // Green
     SDL_RenderClear(sdlRenderer);
     SDL_RenderPresent(sdlRenderer);
-    
-    // Wait 3 seconds
-    SDL_Delay(3000);
+    SDL_Delay(2000);
 
-    // Cleanup
+    // Step 4: Filesystem (RomFS)
+    Result rc = romfsInit();
+    if (R_FAILED(rc)) {
+        // FAIL: RED Screen
+        SDL_SetRenderDrawColor(sdlRenderer, 255, 0, 0, 255); // Red
+        SDL_RenderClear(sdlRenderer);
+        SDL_RenderPresent(sdlRenderer);
+        SDL_Delay(5000);
+        SDL_Quit();
+        return 1;
+    }
+
+    // SUCCESS: BLUE Screen
+    SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 255, 255); // Blue
+    SDL_RenderClear(sdlRenderer);
+    SDL_RenderPresent(sdlRenderer);
+    
+    // STAY HERE to confirm stability
+    SDL_Delay(5000);
+
     if (sdlRenderer) SDL_DestroyRenderer(sdlRenderer);
     if (sdlWindow) SDL_DestroyWindow(sdlWindow);
     SDL_Quit();
-    // consoleExit is already done
+    romfsExit();
     return 0;
 #endif
 
