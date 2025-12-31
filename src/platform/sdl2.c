@@ -312,7 +312,7 @@ static bool8 InitVideo(void)
     int sdlRendererFlags = 0;
 
 #ifdef __SWITCH__
-    videoScale = 3;
+    videoScale = 1;
 #else
     videoScale = 1;
 #endif
@@ -320,10 +320,17 @@ static bool8 InitVideo(void)
     scrW = BASE_DISPLAY_WIDTH;
     scrH = BASE_DISPLAY_HEIGHT;
 
+#ifdef __SWITCH__
+    // Force 720p fullscreen on Switch to avoid NWindow dimension errors
+    windowWidth = 1280;
+    windowHeight = 720;
+    sdlWindow = SDL_CreateWindow("Pokémon Emerald", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
+#else
     windowWidth = scrW * videoScale;
     windowHeight = scrH * videoScale;
-
     sdlWindow = SDL_CreateWindow("Pokémon Emerald", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
+#endif
+
     if (sdlWindow == NULL)
     {
         fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -346,10 +353,29 @@ static bool8 InitVideo(void)
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
     SDL_SetWindowMinimumSize(sdlWindow, BASE_DISPLAY_WIDTH, BASE_DISPLAY_HEIGHT);
 
+#ifndef __SWITCH__
     if (SetResolution(scrW, scrH) == FALSE)
     {
         return FALSE;
     }
+#else
+    // On Switch, just set up the texture for the GBA resolution without changing window size
+    displayWidth = scrW;
+    displayHeight = scrH;
+    SDL_RenderSetLogicalSize(sdlRenderer, displayWidth, displayHeight);
+    
+    Uint32 format = SDL_PIXELFORMAT_RGBA8888;
+    // Resize intermediate buffer
+    size_t newSize = displayWidth * displayHeight * sizeof(uint16_t);
+    if (newSize != intermediateBufferSize) {
+        intermediateBuffer = realloc(intermediateBuffer, newSize);
+        intermediateBufferSize = newSize;
+        if (!intermediateBuffer) return FALSE;
+    }
+
+    sdlTexture = SDL_CreateTexture(sdlRenderer, format, SDL_TEXTUREACCESS_STREAMING, displayWidth, displayHeight);
+    if (!sdlTexture) return FALSE;
+#endif
 
     for (unsigned i = 0; i < NUM_BACKGROUNDS + 1; i++)
         layerEnabled[i] = TRUE;
@@ -494,7 +520,7 @@ int main(int argc, char **argv)
     }
 
     printf("SDL_Init: OK\n");
-    printf("Press A to exit diagnostic...\n");
+    printf("Press A to attempt InitVideo...\n");
 
     while(appletMainLoop())
     {
@@ -503,8 +529,52 @@ int main(int argc, char **argv)
         consoleUpdate(NULL);
     }
 
-    SDL_Quit();
+    // Step 3: Video Initialization (Window, Renderer, Texture)
+    printf("Attempting InitVideo()...\n");
+    printf("(Console will close momentarily)\n");
+    
+    // Drain input events
+    while(appletMainLoop()) {
+        padUpdate(&pad);
+        if (padGetButtonsDown(&pad) & HidNpadButton_A) break;
+        consoleUpdate(NULL);
+    }
+    
+    // CRITICAL: Close console to release framebuffer for SDL
     consoleExit(NULL);
+
+    if (InitVideo() == FALSE)
+    {
+        // Re-open console to show error
+        consoleInit(NULL);
+        printf("\x1b[1;1H");
+        printf("InitVideo() FAILED!\n");
+        printf("Check SDL_Error: %s\n", SDL_GetError());
+        printf("Press + to exit.\n");
+        while(appletMainLoop()) {
+            padUpdate(&pad);
+            if (padGetButtonsDown(&pad) & HidNpadButton_Plus) break;
+            consoleUpdate(NULL);
+        }
+        SDL_Quit();
+        consoleExit(NULL);
+        return 1;
+    }
+
+    // If we are here, Video is OK.
+    // Show a GREEN screen to verify.
+    SDL_SetRenderDrawColor(sdlRenderer, 0, 255, 0, 255); // Green
+    SDL_RenderClear(sdlRenderer);
+    SDL_RenderPresent(sdlRenderer);
+    
+    // Wait 3 seconds
+    SDL_Delay(3000);
+
+    // Cleanup
+    if (sdlRenderer) SDL_DestroyRenderer(sdlRenderer);
+    if (sdlWindow) SDL_DestroyWindow(sdlWindow);
+    SDL_Quit();
+    // consoleExit is already done
     return 0;
 #endif
 
