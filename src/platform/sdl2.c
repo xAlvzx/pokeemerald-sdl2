@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-u32 __nx_applet_type = AppletType_Application;
+// u32 __nx_applet_type = AppletType_Application;
 
 void SwitchLog(const char* fmt, ...) {
     char buf[512];
@@ -63,6 +63,8 @@ void SwitchLog(const char* fmt, ...) {
 #define STBI_ONLY_PNG
 
 #include "stb_image.h"
+
+// ... (previous static definitions can remain as they are unused if main is replaced) ...
 
 struct DisplayBorder {
     int width, height;
@@ -454,12 +456,84 @@ static void LoadBorders(void)
 
 int main(int argc, char **argv)
 {
+#ifdef __SWITCH__
+    // Step 1: Basic libnx init (Known to work)
+    consoleInit(NULL);
+    padConfigureInput(1, HidNpadStyleSet_NpadStandard);
+    PadState pad;
+    padInitializeDefault(&pad);
+
+    printf("\x1b[1;1H");
+    printf("DIAGNOSTIC STEP 1: Basic libnx\n");
+    printf("------------------------------\n");
+    printf("libnx init: OK\n");
+    printf("Press A to attempt SDL_Init...\n");
+
+    while(appletMainLoop())
+    {
+        padUpdate(&pad);
+        if (padGetButtonsDown(&pad) & HidNpadButton_A) break;
+        consoleUpdate(NULL);
+    }
+
+    // Step 2: SDL2 Initialization
+    printf("Attempting SDL_Init...\n");
+    consoleUpdate(NULL);
+
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
+    {
+        printf("SDL_Init FAILED: %s\n", SDL_GetError());
+        printf("Press + to exit.\n");
+        while(appletMainLoop()) {
+            padUpdate(&pad);
+            if (padGetButtonsDown(&pad) & HidNpadButton_Plus) break;
+            consoleUpdate(NULL);
+        }
+        consoleExit(NULL);
+        return 1;
+    }
+
+    printf("SDL_Init: OK\n");
+    printf("Press A to exit diagnostic...\n");
+
+    while(appletMainLoop())
+    {
+        padUpdate(&pad);
+        if (padGetButtonsDown(&pad) & HidNpadButton_A) break;
+        consoleUpdate(NULL);
+    }
+
+    SDL_Quit();
+    consoleExit(NULL);
+    return 0;
+#endif
+
+    // UNREACHABLE CODE BELOW IN SWITCH BUILD
+    /*
     // Open an output console on Windows
 #ifdef _WIN32
     AllocConsole() ;
     AttachConsole( GetCurrentProcessId() ) ;
     freopen( "CON", "w", stdout ) ;
 #endif
+
+    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
+    {
+#ifdef __SWITCH__
+        // Fallback logging if SDL fails immediately
+        FILE* f = fopen("sdmc:/switch/pokeemerald/error.log", "w");
+        if (f) {
+            fprintf(f, "SDL_Init failed: %s\n", SDL_GetError());
+            fclose(f);
+        }
+#endif
+        return 1;
+    }
+
+    if (InitVideo() == FALSE)
+    {
+        return 1;
+    }
 
 #ifdef __SWITCH__
     Result rc = romfsInit();
@@ -471,16 +545,6 @@ int main(int argc, char **argv)
 #endif
 
     ReadSaveFile(SAVE_PATH);
-
-    if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
-    {
-        return 1;
-    }
-
-    if (InitVideo() == FALSE)
-    {
-        return 1;
-    }
 
     simTime = curGameTime = lastGameTime = SDL_GetPerformanceCounter();
 
@@ -598,7 +662,11 @@ int main(int argc, char **argv)
     SDL_Quit();
 
     return 0;
+    */
+    return 0;
 }
+
+
 
 static void ReadSaveFile(char *path)
 {
