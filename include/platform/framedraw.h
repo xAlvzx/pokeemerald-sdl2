@@ -3,5 +3,5 @@
 
 #include "global.h"
 
-void DrawFrame(uint16_t *pixels);
+void DrawFrame(void *pixels);
 #endif

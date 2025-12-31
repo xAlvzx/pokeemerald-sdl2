@@ -888,10 +888,12 @@ uint16_t *memsetu16(uint16_t *dst, uint16_t fill, size_t count)
     }
 }
 
-void DrawFrame(uint16_t *pixels)
+void DrawFrame(void *p)
 {
-    int i;
-    int j;
+    uint16_t *pixels = (uint16_t *)p;
+    u32 i;
+    u32 j;
+    static uint16_t scanline[DISPLAY_WIDTH];
 
     for (i = 0; i < DISPLAY_HEIGHT; i++)
     {

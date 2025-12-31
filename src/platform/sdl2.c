@@ -96,6 +96,12 @@ struct bgPriority {
 SDL_Window *sdlWindow;
 SDL_Renderer *sdlRenderer;
 SDL_Texture *sdlTexture;
+
+#ifdef __SWITCH__
+static uint16_t *intermediateBuffer = NULL;
+static size_t intermediateBufferSize = 0;
+#endif
+
 bool speedUp = false;
 unsigned int videoScale = 1;
 bool videoScaleChanged = false;
@@ -259,17 +265,36 @@ static bool8 SetResolution(s32 width, s32 height)
         sdlTexture = NULL;
     }
 
+#ifdef __SWITCH__
+    Uint32 format = SDL_PIXELFORMAT_RGBA8888;
+    
+    // Resize intermediate buffer
+    size_t newSize = displayWidth * displayHeight * sizeof(uint16_t);
+    if (newSize != intermediateBufferSize) {
+        intermediateBuffer = realloc(intermediateBuffer, newSize);
+        intermediateBufferSize = newSize;
+        if (!intermediateBuffer) {
+             fprintf(stderr, "Failed to allocate intermediate buffer!\n");
+             return FALSE;
+        }
+    }
+#else
+    Uint32 format = SDL_PIXELFORMAT_ABGR1555;
+#endif
+
     sdlTexture = SDL_CreateTexture(sdlRenderer,
-                                   SDL_PIXELFORMAT_ABGR1555,
+                                   format,
                                    SDL_TEXTUREACCESS_STREAMING,
                                    displayWidth, displayHeight);
     if (sdlTexture == NULL)
     {
         fprintf(stderr, "Texture could not be created! SDL_Error: %s\n", SDL_GetError());
+        DBGPRINTF("SetResolution: Texture creation failed: %s\n", SDL_GetError());
         return FALSE;
     }
 
     printf("Set resolution to %dx%d (scale %d)\n", width, height, videoScale);
+    DBGPRINTF("SetResolution: Created texture %dx%d fmt=%u\n", displayWidth, displayHeight, format);
 
     shouldRedrawBorder = TRUE;
 
@@ -1663,6 +1688,8 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
     unsigned int blendMode = (gpu.blendControl >> 6) & 3;
     unsigned int xpos;
 
+    if (vcount == 0) DBGPRINTF("DrawScanline: Start. blendMode=%u\n", blendMode);
+
     //initialize all priority bookkeeping data
     memset(scanline.layers, 0, sizeof(scanline.layers));
     memset(scanline.winMask, 0, sizeof(scanline.winMask));
@@ -1683,6 +1710,8 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
         scanline.prioritySortedBgsCount[priority]++;
     }
 
+    if (vcount == 0) DBGPRINTF("DrawScanline: Bookkeeping done. Rendering BGs...\n");
+
     // Render all visible backgrounds
     for (bgnum = 3; bgnum >= 0; bgnum--)
     {
@@ -1698,6 +1727,8 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
                 RenderBGScanline(bgnum, bg_x, bg_y, vcount, line);
         }
     }
+
+    if (vcount == 0) DBGPRINTF("DrawScanline: BGs done. Calculating windows...\n");
 
     bool windowsEnabled = false;
     int32_t WIN0bottom, WIN0top, WIN0right, WIN0left;
@@ -1760,15 +1791,19 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
         }
     }
 
+    if (vcount == 0) DBGPRINTF("DrawScanline: Windows done. Drawing Sprites...\n");
+
     if (gpu.displayControl & DISPCNT_OBJ_ON && layerEnabled[4])
         DrawSprites(&scanline, vcount, windowsEnabled);
+
+    if (vcount == 0) DBGPRINTF("DrawScanline: Sprites done. Blending...\n");
 
     //iterate trough every priority in order
     for (prnum = 3; prnum >= 0; prnum--)
     {
         int lineStart, lineEnd;
 
-        for (char prsub = scanline.prioritySortedBgsCount[prnum] - 1; prsub >= 0; prsub--)
+        for (int prsub = scanline.prioritySortedBgsCount[prnum] - 1; prsub >= 0; prsub--)
         {
             char bgnum = scanline.prioritySortedBgs[prnum][prsub];
             //if background is enabled then draw it
@@ -1841,6 +1876,7 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
             }
         }
     }
+    if (vcount == 0) DBGPRINTF("DrawScanline: End.\n");
 }
 
 static uint16_t GetBackdropColor(void)
@@ -1865,15 +1901,29 @@ static uint16_t GetBackdropColor(void)
     return backdropColor;
 }
 
-void DrawFrame(uint16_t *pixels)
+void DrawFrame(void *pixels)
 {
     u32 i;
     u32 j;
     static uint16_t scanline[DISPLAY_WIDTH];
     uint16_t backdropColor = GetBackdropColor();
 
-    if (UsingBorder())
-        DrawBorder(pixels);
+    DBGPRINTF("DrawFrame: Starting... pixels=%p\n", pixels);
+
+#ifdef __SWITCH__
+    uint16_t *renderTarget = intermediateBuffer;
+    if (!renderTarget) {
+        DBGPRINTF("DrawFrame: ERROR - intermediateBuffer is NULL!\n");
+        return;
+    }
+#else
+    uint16_t *renderTarget = (uint16_t *)pixels;
+#endif
+
+    if (UsingBorder()) {
+        DBGPRINTF("DrawFrame: Drawing borders...\n");
+        DrawBorder(renderTarget);
+    }
 
     // Only draw the rectangular region that contributes to the app's window
     unsigned lineStart = 0;
@@ -1892,30 +1942,61 @@ void DrawFrame(uint16_t *pixels)
         scanlineStart = offsetY;
         scanlineEnd = scanlineStart + BASE_DISPLAY_HEIGHT;
     }
+    
+    DBGPRINTF("DrawFrame: Loop range y=%u-%u, x=%u-%u\n", scanlineStart, scanlineEnd, lineStart, lineEnd);
 
     for (i = scanlineStart; i < scanlineEnd; i++)
     {
         // Fill this scanline with the backdrop color
-        for (unsigned j = lineStart; j < lineEnd; j++)
-            scanline[j] = backdropColor;
+        for (unsigned k = lineStart; k < lineEnd; k++)
+            scanline[k] = backdropColor;
 
         gpu.vCount = i - scanlineStart;
 
+        if (i == 0) DBGPRINTF("DrawFrame: Calling DrawScanline(0)...\n");
         DrawScanline(scanline, i);
+        if (i == 0) DBGPRINTF("DrawFrame: DrawScanline(0) done.\n");
 
-        if (gpu.scanlineEffect.type != GPU_SCANLINE_EFFECT_OFF)
+        if (gpu.scanlineEffect.type != GPU_SCANLINE_EFFECT_OFF) {
+            if (i == 0) DBGPRINTF("DrawFrame: Calling RunScanlineEffect...\n");
             RunScanlineEffect();
+            if (i == 0) DBGPRINTF("DrawFrame: RunScanlineEffect done.\n");
+        }
 
         gpu.displayStatus |= INTR_FLAG_HBLANK;
 
-        if (runHBlank && (gpu.displayStatus & DISPSTAT_HBLANK_INTR))
+        if (runHBlank && (gpu.displayStatus & DISPSTAT_HBLANK_INTR)) {
+            if (i == 0) DBGPRINTF("DrawFrame: Calling DoHBlankUpdate...\n");
             DoHBlankUpdate();
+            if (i == 0) DBGPRINTF("DrawFrame: DoHBlankUpdate done.\n");
+        }
 
         gpu.displayStatus &= ~INTR_FLAG_HBLANK;
 
         // Copy to screen
-        memcpy(&pixels[(i * displayWidth) + lineStart], &scanline[lineStart], (lineEnd - lineStart) * sizeof(u16));
+        if (i == 0) DBGPRINTF("DrawFrame: Copying to renderTarget...\n");
+        memcpy(&renderTarget[(i * displayWidth) + lineStart], &scanline[lineStart], (lineEnd - lineStart) * sizeof(u16));
+        if (i == 0) DBGPRINTF("DrawFrame: Copy done.\n");
+        
+        if (i == scanlineStart || i == scanlineEnd - 1)
+            DBGPRINTF("DrawFrame: Scanline %u processed\n", i);
     }
+
+#ifdef __SWITCH__
+    // Convert 15-bit ABGR to 32-bit RGBA
+    DBGPRINTF("DrawFrame: Starting 32-bit conversion...\n");
+    uint32_t *dest32 = (uint32_t *)pixels;
+    int totalPixels = displayWidth * displayHeight;
+    for (int k = 0; k < totalPixels; k++)
+    {
+        uint16_t c = renderTarget[k];
+        uint8_t r = (c & 0x1F) << 3;
+        uint8_t g = ((c >> 5) & 0x1F) << 3;
+        uint8_t b = ((c >> 10) & 0x1F) << 3;
+        dest32[k] = (0xFF000000) | (b << 16) | (g << 8) | r;
+    }
+    DBGPRINTF("DrawFrame: Conversion done.\n");
+#endif
 }
 
 static void UpdateBorder(void)
@@ -2289,20 +2370,22 @@ static void ClearImage(uint16_t *image, size_t size)
 
 static void RenderFrame(SDL_Texture *texture)
 {
-    DBGPRINTF("RenderFrame called (disabled)\n");
-    /*
     void *pixels;
     int pitch;
 
+    DBGPRINTF("RenderFrame: Locking texture...\n");
     if (SDL_LockTexture(texture, NULL, &pixels, &pitch) < 0)
     {
+        DBGPRINTF("RenderFrame: Lock failed: %s\n", SDL_GetError());
         return;
     }
+    DBGPRINTF("RenderFrame: Lock successful. Pitch: %d\n", pitch);
 
-    DrawFrame((uint16_t *)pixels);
+    DrawFrame(pixels);
+    DBGPRINTF("RenderFrame: DrawFrame done.\n");
 
     SDL_UnlockTexture(texture);
-    */
+    DBGPRINTF("RenderFrame: Unlock done.\n");
 }
 
 #ifdef USE_THREAD
