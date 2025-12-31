@@ -580,12 +580,23 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    // SUCCESS: BLUE Screen
+    // SUCCESS: BLUE Screen (RomFS OK)
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 255, 255); // Blue
     SDL_RenderClear(sdlRenderer);
     SDL_RenderPresent(sdlRenderer);
+    SDL_Delay(2000);
+
+    // Step 5: Save File System (SD Card access)
+    mkdir("sdmc:/switch", 0777);
+    mkdir(SAVE_DIR, 0777);
+
+    ReadSaveFile(SAVE_PATH);
     
-    // STAY HERE to confirm stability
+    // If we reach here, ReadSaveFile didn't crash
+    // SUCCESS: WHITE Screen
+    SDL_SetRenderDrawColor(sdlRenderer, 255, 255, 255, 255); // White
+    SDL_RenderClear(sdlRenderer);
+    SDL_RenderPresent(sdlRenderer);
     SDL_Delay(5000);
 
     if (sdlRenderer) SDL_DestroyRenderer(sdlRenderer);
