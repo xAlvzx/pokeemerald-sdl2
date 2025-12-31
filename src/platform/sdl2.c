@@ -607,6 +607,15 @@ int main(int argc, char **argv)
     SDL_SetRenderDrawColor(sdlRenderer, 255, 255, 0, 255); // Yellow
     SDL_RenderClear(sdlRenderer);
     SDL_RenderPresent(sdlRenderer);
+    SDL_Delay(2000);
+
+    // Step 7: Load Game Borders (PNG decoding from RomFS)
+    LoadBorders();
+    
+    // SUCCESS: CYAN Screen
+    SDL_SetRenderDrawColor(sdlRenderer, 0, 255, 255, 255); // Cyan
+    SDL_RenderClear(sdlRenderer);
+    SDL_RenderPresent(sdlRenderer);
     SDL_Delay(5000);
 
     if (sdlRenderer) SDL_DestroyRenderer(sdlRenderer);
