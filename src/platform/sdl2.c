@@ -266,7 +266,7 @@ static bool8 SetResolution(s32 width, s32 height)
     }
 
 #ifdef __SWITCH__
-    Uint32 format = SDL_PIXELFORMAT_ABGR8888;
+    Uint32 format = SDL_PIXELFORMAT_RGBA8888;
     
     // Resize intermediate buffer
     size_t newSize = displayWidth * displayHeight * sizeof(uint16_t);
@@ -289,12 +289,10 @@ static bool8 SetResolution(s32 width, s32 height)
     if (sdlTexture == NULL)
     {
         fprintf(stderr, "Texture could not be created! SDL_Error: %s\n", SDL_GetError());
-        DBGPRINTF("SetResolution: Texture creation failed: %s\n", SDL_GetError());
         return FALSE;
     }
 
     printf("Set resolution to %dx%d (scale %d)\n", width, height, videoScale);
-    DBGPRINTF("SetResolution: Created texture %dx%d fmt=%u\n", displayWidth, displayHeight, format);
 
     shouldRedrawBorder = TRUE;
 
@@ -319,17 +317,12 @@ static bool8 InitVideo(void)
     windowWidth = scrW * videoScale;
     windowHeight = scrH * videoScale;
 
-    DBGPRINTF("InitVideo: Creating window %dx%d\n", windowWidth, windowHeight);
-
     sdlWindow = SDL_CreateWindow("Pokémon Emerald", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (sdlWindow == NULL)
     {
         fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
-        DBGPRINTF("Window creation failed: %s\n", SDL_GetError());
         return FALSE;
     }
-
-    DBGPRINTF("InitVideo: Window created. Creating renderer...\n");
 
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     sdlRendererFlags |= SDL_RENDERER_PRESENTVSYNC;
@@ -339,11 +332,8 @@ static bool8 InitVideo(void)
     if (sdlRenderer == NULL)
     {
         fprintf(stderr, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
-        DBGPRINTF("Renderer creation failed: %s\n", SDL_GetError());
         return FALSE;
     }
-
-    DBGPRINTF("InitVideo: Renderer created.\n");
 
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sdlRenderer);
@@ -352,7 +342,6 @@ static bool8 InitVideo(void)
 
     if (SetResolution(scrW, scrH) == FALSE)
     {
-        DBGPRINTF("InitVideo: SetResolution failed.\n");
         return FALSE;
     }
 
@@ -475,38 +464,29 @@ int main(int argc, char **argv)
     romfsInit();
     mkdir("sdmc:/switch", 0777);
     mkdir(SAVE_DIR, 0777);
-    DBGPRINTF("Switch RomFS initialized. Save dir created.\n");
 #endif
 
     ReadSaveFile(SAVE_PATH);
-    DBGPRINTF("Save file read.\n");
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
     {
-        DBGPRINTF("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
-    DBGPRINTF("SDL Initialized.\n");
 
     if (InitVideo() == FALSE)
     {
-        DBGPRINTF("InitVideo failed.\n");
         return 1;
     }
-    DBGPRINTF("Video Initialized.\n");
 
     simTime = curGameTime = lastGameTime = SDL_GetPerformanceCounter();
 
     InitAudio();
-    DBGPRINTF("Audio Initialized.\n");
 
     InitTime();
 
     LoadBorders();
-    DBGPRINTF("Borders Loaded.\n");
 
     GameInit();
-    DBGPRINTF("GameInit done. Entering main loop...\n");
 
 #ifdef USE_THREAD
     isFrameAvailable.value = 0;
@@ -522,10 +502,7 @@ int main(int argc, char **argv)
     int frameCounter = 0;
     while (isRunning)
     {
-        if (frameCounter < 5) DBGPRINTF("Loop start %d\n", frameCounter);
-        
         ProcessEvents();
-        if (frameCounter < 5) DBGPRINTF("ProcessEvents done %d\n", frameCounter);
 
         if (videoScaleChanged)
         {
@@ -571,9 +548,7 @@ int main(int argc, char **argv)
                     accumulator -= dt;
                 }
 #else
-                if (frameCounter < 5) DBGPRINTF("RunFrame start %d\n", frameCounter);
                 RunFrame();
-                if (frameCounter < 5) DBGPRINTF("RunFrame done %d\n", frameCounter);
                 isGameStepDrawn = false;
 
                 accumulator -= dt;
@@ -591,9 +566,7 @@ int main(int argc, char **argv)
             if (!isGameStepDrawn)
             {
                 // Draws each scanline
-                if (frameCounter < 5) DBGPRINTF("RenderFrame start %d\n", frameCounter);
                 RenderFrame(sdlTexture);
-                if (frameCounter < 5) DBGPRINTF("RenderFrame done %d\n", frameCounter);
                 isGameStepDrawn = true;
             }
             
@@ -602,16 +575,10 @@ int main(int argc, char **argv)
         lastGameTime = curGameTime;
 
         // Display the frame
-        if (frameCounter < 5) DBGPRINTF("RenderCopy start %d\n", frameCounter);
         SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
-        if (frameCounter < 5) DBGPRINTF("RenderPresent start %d\n", frameCounter);
         SDL_RenderPresent(sdlRenderer);
-        if (frameCounter < 5) DBGPRINTF("RenderPresent done %d\n", frameCounter);
         
         frameCounter++;
-        if (frameCounter % 60 == 0) {
-             DBGPRINTF("Main Loop iteration %d\n", frameCounter);
-        }
     }
 
     FreeBorders();
@@ -666,7 +633,6 @@ void Platform_StoreSaveFile(void)
 
 void Platform_ReadFlash(u16 sectorNum, u32 offset, u8 *dest, u32 size)
 {
-    DBGPRINTF("ReadFlash(sectorNum=0x%04X,offset=0x%08X,size=0x%02X)\n",sectorNum,offset,size);
     FILE * savefile = fopen(SAVE_PATH, "r+b");
     if (savefile == NULL)
     {
@@ -1692,8 +1658,6 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
     unsigned int blendMode = (gpu.blendControl >> 6) & 3;
     unsigned int xpos;
 
-    if (vcount == 0) DBGPRINTF("DrawScanline: Start. blendMode=%u\n", blendMode);
-
     //initialize all priority bookkeeping data
     memset(scanline.layers, 0, sizeof(scanline.layers));
     memset(scanline.winMask, 0, sizeof(scanline.winMask));
@@ -1714,8 +1678,6 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
         scanline.prioritySortedBgsCount[priority]++;
     }
 
-    if (vcount == 0) DBGPRINTF("DrawScanline: Bookkeeping done. Rendering BGs...\n");
-
     // Render all visible backgrounds
     for (bgnum = 3; bgnum >= 0; bgnum--)
     {
@@ -1731,8 +1693,6 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
                 RenderBGScanline(bgnum, bg_x, bg_y, vcount, line);
         }
     }
-
-    if (vcount == 0) DBGPRINTF("DrawScanline: BGs done. Calculating windows...\n");
 
     bool windowsEnabled = false;
     int32_t WIN0bottom, WIN0top, WIN0right, WIN0left;
@@ -1795,12 +1755,8 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
         }
     }
 
-    if (vcount == 0) DBGPRINTF("DrawScanline: Windows done. Drawing Sprites...\n");
-
     if (gpu.displayControl & DISPCNT_OBJ_ON && layerEnabled[4])
         DrawSprites(&scanline, vcount, windowsEnabled);
-
-    if (vcount == 0) DBGPRINTF("DrawScanline: Sprites done. Blending...\n");
 
     //iterate trough every priority in order
     for (prnum = 3; prnum >= 0; prnum--)
@@ -1880,7 +1836,6 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
             }
         }
     }
-    if (vcount == 0) DBGPRINTF("DrawScanline: End.\n");
 }
 
 static uint16_t GetBackdropColor(void)
@@ -1912,22 +1867,15 @@ void DrawFrame(void *pixels)
     static uint16_t scanline[DISPLAY_WIDTH];
     uint16_t backdropColor = GetBackdropColor();
 
-    DBGPRINTF("DrawFrame: Starting... pixels=%p\n", pixels);
-
 #ifdef __SWITCH__
     uint16_t *renderTarget = intermediateBuffer;
-    if (!renderTarget) {
-        DBGPRINTF("DrawFrame: ERROR - intermediateBuffer is NULL!\n");
-        return;
-    }
+    if (!renderTarget) return; // Should not happen if InitVideo succeeded
 #else
     uint16_t *renderTarget = (uint16_t *)pixels;
 #endif
 
-    if (UsingBorder()) {
-        DBGPRINTF("DrawFrame: Drawing borders...\n");
+    if (UsingBorder())
         DrawBorder(renderTarget);
-    }
 
     // Only draw the rectangular region that contributes to the app's window
     unsigned lineStart = 0;
@@ -1946,8 +1894,6 @@ void DrawFrame(void *pixels)
         scanlineStart = offsetY;
         scanlineEnd = scanlineStart + BASE_DISPLAY_HEIGHT;
     }
-    
-    DBGPRINTF("DrawFrame: Loop range y=%u-%u, x=%u-%u\n", scanlineStart, scanlineEnd, lineStart, lineEnd);
 
     for (i = scanlineStart; i < scanlineEnd; i++)
     {
@@ -1957,33 +1903,20 @@ void DrawFrame(void *pixels)
 
         gpu.vCount = i - scanlineStart;
 
-        if (i == 0) DBGPRINTF("DrawFrame: Calling DrawScanline(0)...\n");
         DrawScanline(scanline, i);
-        if (i == 0) DBGPRINTF("DrawFrame: DrawScanline(0) done.\n");
 
-        if (gpu.scanlineEffect.type != GPU_SCANLINE_EFFECT_OFF) {
-            if (i == 0) DBGPRINTF("DrawFrame: Calling RunScanlineEffect...\n");
+        if (gpu.scanlineEffect.type != GPU_SCANLINE_EFFECT_OFF)
             RunScanlineEffect();
-            if (i == 0) DBGPRINTF("DrawFrame: RunScanlineEffect done.\n");
-        }
 
         gpu.displayStatus |= INTR_FLAG_HBLANK;
 
-        if (runHBlank && (gpu.displayStatus & DISPSTAT_HBLANK_INTR)) {
-            if (i == 0) DBGPRINTF("DrawFrame: Calling DoHBlankUpdate...\n");
+        if (runHBlank && (gpu.displayStatus & DISPSTAT_HBLANK_INTR))
             DoHBlankUpdate();
-            if (i == 0) DBGPRINTF("DrawFrame: DoHBlankUpdate done.\n");
-        }
 
         gpu.displayStatus &= ~INTR_FLAG_HBLANK;
 
         // Copy to screen
-        if (i == 0) DBGPRINTF("DrawFrame: Copying to renderTarget...\n");
         memcpy(&renderTarget[(i * displayWidth) + lineStart], &scanline[lineStart], (lineEnd - lineStart) * sizeof(u16));
-        if (i == 0) DBGPRINTF("DrawFrame: Copy done.\n");
-        
-        if (i == scanlineStart || i == scanlineEnd - 1)
-            DBGPRINTF("DrawFrame: Scanline %u processed\n", i);
     }
 
 #ifdef __SWITCH__
@@ -2001,8 +1934,8 @@ void DrawFrame(void *pixels)
         uint8_t g = (g5 << 3) | (g5 >> 2);
         uint8_t b = (b5 << 3) | (b5 >> 2);
         
-        // SDL_PIXELFORMAT_ABGR8888: A=24, B=16, G=8, R=0
-        dest32[k] = (0xFF << 24) | (b << 16) | (g << 8) | r;
+        // SDL_PIXELFORMAT_RGBA8888: R=24, G=16, B=8, A=0
+        dest32[k] = (r << 24) | (g << 16) | (b << 8) | 0xFF;
     }
 #endif
 }
@@ -2381,19 +2314,14 @@ static void RenderFrame(SDL_Texture *texture)
     void *pixels;
     int pitch;
 
-    DBGPRINTF("RenderFrame: Locking texture...\n");
     if (SDL_LockTexture(texture, NULL, &pixels, &pitch) < 0)
     {
-        DBGPRINTF("RenderFrame: Lock failed: %s\n", SDL_GetError());
         return;
     }
-    DBGPRINTF("RenderFrame: Lock successful. Pitch: %d\n", pitch);
 
     DrawFrame(pixels);
-    DBGPRINTF("RenderFrame: DrawFrame done.\n");
 
     SDL_UnlockTexture(texture);
-    DBGPRINTF("RenderFrame: Unlock done.\n");
 }
 
 #ifdef USE_THREAD
@@ -2473,12 +2401,6 @@ void Platform_GetDateTime(struct SiiRtcInfo *rtc)
     rtc->hour = internalClock.hour;
     rtc->minute = internalClock.minute;
     rtc->second = internalClock.second;
-    DBGPRINTF("GetDateTime: %d-%02d-%02d %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->year),
-                                                         ConvertBcdToBinary(rtc->month),
-                                                         ConvertBcdToBinary(rtc->day),
-                                                         ConvertBcdToBinary(rtc->hour),
-                                                         ConvertBcdToBinary(rtc->minute),
-                                                         ConvertBcdToBinary(rtc->second));
 }
 
 void Platform_SetDateTime(struct SiiRtcInfo *rtc)
@@ -2498,9 +2420,6 @@ void Platform_GetTime(struct SiiRtcInfo *rtc)
     rtc->hour = internalClock.hour;
     rtc->minute = internalClock.minute;
     rtc->second = internalClock.second;
-    DBGPRINTF("GetTime: %02d:%02d:%02d\n", ConvertBcdToBinary(rtc->hour),
-                                        ConvertBcdToBinary(rtc->minute),
-                                        ConvertBcdToBinary(rtc->second));
 }
 
 void Platform_SetTime(struct SiiRtcInfo *rtc)
