@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
+u32 __nx_applet_type = AppletType_Application;
+
 void SwitchLog(const char* fmt, ...) {
     char buf[512];
     va_list args;
@@ -319,7 +321,7 @@ static bool8 InitVideo(void)
     windowWidth = scrW * videoScale;
     windowHeight = scrH * videoScale;
 
-    sdlWindow = SDL_CreateWindow("Pokémon Emerald", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    sdlWindow = SDL_CreateWindow("Pokémon Emerald", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL);
     if (sdlWindow == NULL)
     {
         fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -1785,7 +1787,7 @@ static void DrawScanline(uint16_t *pixels, uint16_t vcount)
             if (isbgEnabled(bgnum))
             {
                 GetBGScanlinePos(bgnum, &lineStart, &lineEnd);
-                uint16_t *src = scanline.layers[bgnum];
+                uint16_t *src = scanline.layers[(int)bgnum];
                 //copy all pixels to framebuffer 
                 for (xpos = lineStart; xpos < lineEnd; xpos++)
                 {

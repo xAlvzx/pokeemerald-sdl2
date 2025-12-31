@@ -40,7 +40,7 @@ HOSTCC := gcc
 HOSTCXX := g++
 
 # Flags
-ARCH := -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -mcpu=cortex-a57+fp+simd
+ARCH := -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIE -mcpu=cortex-a57+fp+simd
 
 CFLAGS := -g -Wall -O2 -ffunction-sections -fdata-sections $(ARCH) -D__SWITCH__ -D__A64__
 CFLAGS += -I$(LIBNX)/include -I$(DEVKITPRO)/portlibs/switch/include
