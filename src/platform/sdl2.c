@@ -1,7 +1,23 @@
 #ifdef PLATFORM_SDL2
+#ifdef __SWITCH__
+#include <switch.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+void SwitchLog(const char* fmt, ...) {
+    char buf[512];
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(buf, sizeof(buf), fmt, args);
+    va_end(args);
+    svcOutputDebugString(buf, strlen(buf));
+}
+#endif
 #include <assert.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <time.h>
 
 #ifdef _WIN32
@@ -12,6 +28,14 @@
 
 #include "global.h"
 #include "platform.h"
+
+// ... (rest of includes)
+
+#ifdef __SWITCH__
+#define DBGPRINTF(...) SwitchLog(__VA_ARGS__)
+#else
+#define DBGPRINTF(...) printf(__VA_ARGS__)
+#endif
 #include "rtc.h"
 #include "gba/defines.h"
 #include "gba/m4a_internal.h"
@@ -23,6 +47,15 @@
 #include "gba/flash_internal.h"
 #include "platform/dma.h"
 #include "platform/framedraw.h"
+
+#ifdef __SWITCH__
+#define ASSET_PATH_PREFIX "romfs:/assets/"
+#define SAVE_PATH "sdmc:/switch/pokeemerald/pokeemerald.sav"
+#define SAVE_DIR "sdmc:/switch/pokeemerald"
+#else
+#define ASSET_PATH_PREFIX "./assets/"
+#define SAVE_PATH "pokeemerald.sav"
+#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_NO_GIF
@@ -257,12 +290,17 @@ static bool8 InitVideo(void)
     windowWidth = scrW * videoScale;
     windowHeight = scrH * videoScale;
 
+    DBGPRINTF("InitVideo: Creating window %dx%d\n", windowWidth, windowHeight);
+
     sdlWindow = SDL_CreateWindow("Pokémon Emerald", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, windowWidth, windowHeight, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
     if (sdlWindow == NULL)
     {
         fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
+        DBGPRINTF("Window creation failed: %s\n", SDL_GetError());
         return FALSE;
     }
+
+    DBGPRINTF("InitVideo: Window created. Creating renderer...\n");
 
 #if SDL_VERSION_ATLEAST(2, 0, 18)
     sdlRendererFlags |= SDL_RENDERER_PRESENTVSYNC;
@@ -272,8 +310,11 @@ static bool8 InitVideo(void)
     if (sdlRenderer == NULL)
     {
         fprintf(stderr, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+        DBGPRINTF("Renderer creation failed: %s\n", SDL_GetError());
         return FALSE;
     }
+
+    DBGPRINTF("InitVideo: Renderer created.\n");
 
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sdlRenderer);
@@ -282,6 +323,7 @@ static bool8 InitVideo(void)
 
     if (SetResolution(scrW, scrH) == FALSE)
     {
+        DBGPRINTF("InitVideo: SetResolution failed.\n");
         return FALSE;
     }
 
@@ -360,7 +402,7 @@ static void LoadBorders(void)
         struct DisplayBorder *border = &gameBorders[i];
 
         char path[22 + 256];
-        snprintf(path, sizeof path, "./assets/borders/%s.png", src->name);
+        snprintf(path, sizeof path, ASSET_PATH_PREFIX "borders/%s.png", src->name);
 
         int width, height, components_per_pixel;
 
@@ -400,28 +442,42 @@ int main(int argc, char **argv)
     freopen( "CON", "w", stdout ) ;
 #endif
 
-    ReadSaveFile("pokeemerald.sav");
+#ifdef __SWITCH__
+    romfsInit();
+    mkdir("sdmc:/switch", 0777);
+    mkdir(SAVE_DIR, 0777);
+    DBGPRINTF("Switch RomFS initialized. Save dir created.\n");
+#endif
+
+    ReadSaveFile(SAVE_PATH);
+    DBGPRINTF("Save file read.\n");
 
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER) < 0)
     {
         DBGPRINTF("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
         return 1;
     }
+    DBGPRINTF("SDL Initialized.\n");
 
     if (InitVideo() == FALSE)
     {
+        DBGPRINTF("InitVideo failed.\n");
         return 1;
     }
+    DBGPRINTF("Video Initialized.\n");
 
     simTime = curGameTime = lastGameTime = SDL_GetPerformanceCounter();
 
     InitAudio();
+    DBGPRINTF("Audio Initialized.\n");
 
     InitTime();
 
     LoadBorders();
+    DBGPRINTF("Borders Loaded.\n");
 
     GameInit();
+    DBGPRINTF("GameInit done. Entering main loop...\n");
 
 #ifdef USE_THREAD
     isFrameAvailable.value = 0;
@@ -434,9 +490,13 @@ int main(int argc, char **argv)
     double accumulator60 = 0.0;
     bool isGameStepDrawn = false;
 
+    int frameCounter = 0;
     while (isRunning)
     {
+        if (frameCounter < 5) DBGPRINTF("Loop start %d\n", frameCounter);
+        
         ProcessEvents();
+        if (frameCounter < 5) DBGPRINTF("ProcessEvents done %d\n", frameCounter);
 
         if (videoScaleChanged)
         {
@@ -482,7 +542,9 @@ int main(int argc, char **argv)
                     accumulator -= dt;
                 }
 #else
+                if (frameCounter < 5) DBGPRINTF("RunFrame start %d\n", frameCounter);
                 RunFrame();
+                if (frameCounter < 5) DBGPRINTF("RunFrame done %d\n", frameCounter);
                 isGameStepDrawn = false;
 
                 accumulator -= dt;
@@ -500,7 +562,9 @@ int main(int argc, char **argv)
             if (!isGameStepDrawn)
             {
                 // Draws each scanline
+                if (frameCounter < 5) DBGPRINTF("RenderFrame start %d\n", frameCounter);
                 RenderFrame(sdlTexture);
+                if (frameCounter < 5) DBGPRINTF("RenderFrame done %d\n", frameCounter);
                 isGameStepDrawn = true;
             }
             
@@ -509,8 +573,16 @@ int main(int argc, char **argv)
         lastGameTime = curGameTime;
 
         // Display the frame
+        if (frameCounter < 5) DBGPRINTF("RenderCopy start %d\n", frameCounter);
         SDL_RenderCopy(sdlRenderer, sdlTexture, NULL, NULL);
+        if (frameCounter < 5) DBGPRINTF("RenderPresent start %d\n", frameCounter);
         SDL_RenderPresent(sdlRenderer);
+        if (frameCounter < 5) DBGPRINTF("RenderPresent done %d\n", frameCounter);
+        
+        frameCounter++;
+        if (frameCounter % 60 == 0) {
+             DBGPRINTF("Main Loop iteration %d\n", frameCounter);
+        }
     }
 
     FreeBorders();
@@ -566,7 +638,7 @@ void Platform_StoreSaveFile(void)
 void Platform_ReadFlash(u16 sectorNum, u32 offset, u8 *dest, u32 size)
 {
     DBGPRINTF("ReadFlash(sectorNum=0x%04X,offset=0x%08X,size=0x%02X)\n",sectorNum,offset,size);
-    FILE * savefile = fopen("pokeemerald.sav", "r+b");
+    FILE * savefile = fopen(SAVE_PATH, "r+b");
     if (savefile == NULL)
     {
         puts("Error opening save file.");
@@ -2215,40 +2287,22 @@ static void ClearImage(uint16_t *image, size_t size)
         image[i] = backdropColor;
 }
 
-void RenderFrame(SDL_Texture *texture)
+static void RenderFrame(SDL_Texture *texture)
 {
-    int pitch = displayWidth * sizeof (Uint16);
+    DBGPRINTF("RenderFrame called (disabled)\n");
+    /*
+    void *pixels;
+    int pitch;
 
-    SDL_RenderClear(sdlRenderer);
-
-#ifdef USE_TEXTURE_LOCK
-    int *pixels = NULL;
-
-    SDL_LockTexture(texture, NULL, (void **)&pixels, &pitch);
-
-    if (!UsingBorder())
+    if (SDL_LockTexture(texture, NULL, &pixels, &pitch) < 0)
     {
-        uint16_t *fill = (uint16_t*)pixels;
-        ClearImage(fill, displayWidth * displayHeight);
+        return;
     }
 
     DrawFrame((uint16_t *)pixels);
 
     SDL_UnlockTexture(texture);
-#else
-    static uint16_t image[DISPLAY_WIDTH * DISPLAY_HEIGHT];
-
-    if (!UsingBorder())
-    {
-        ClearImage(image, displayWidth * displayHeight);
-    }
-
-    DrawFrame(image);
-
-    SDL_UpdateTexture(texture, NULL, image, pitch);
-#endif
-
-    gpu.vCount = displayHeight + 1; // prep for being in VBlank period
+    */
 }
 
 #ifdef USE_THREAD

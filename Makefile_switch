@@ -1,0 +1,221 @@
+# Tools definitions (Inlined from make_tools.mk to avoid overrides)
+TOOLS_DIR := tools
+TOOL_NAMES := aif2pcm bin2c gbafix gbagfx jsonproc mapjson mid2agb preproc ramscrgen rsfont scaninc
+TOOLDIRS := $(TOOL_NAMES:%=$(TOOLS_DIR)/%)
+
+GFX := $(TOOLS_DIR)/gbagfx/gbagfx
+AIF := $(TOOLS_DIR)/aif2pcm/aif2pcm
+MID := $(TOOLS_DIR)/mid2agb/mid2agb
+SCANINC := $(TOOLS_DIR)/scaninc/scaninc
+PREPROC := $(TOOLS_DIR)/preproc/preproc
+RAMSCRGEN := $(TOOLS_DIR)/ramscrgen/ramscrgen
+FIX := $(TOOLS_DIR)/gbafix/gbafix
+MAPJSON := $(TOOLS_DIR)/mapjson/mapjson
+JSONPROC := $(TOOLS_DIR)/jsonproc/jsonproc
+
+# Switch Makefile
+ifeq ($(strip $(DEVKITPRO)),)
+$(error "Please set DEVKITPRO in your environment. export DEVKITPRO=<path to>/devkitpro")
+endif
+
+TOPDIR ?= $(CURDIR)
+
+# Switch specific settings
+export DEVKITA64 := $(DEVKITPRO)/devkitA64
+export LIBNX := $(DEVKITPRO)/libnx
+export DEVKITTOOLS := $(DEVKITPRO)/tools
+
+# Compiler settings
+PREFIX := aarch64-none-elf-
+CC := $(DEVKITA64)/bin/$(PREFIX)gcc
+CXX := $(DEVKITA64)/bin/$(PREFIX)g++
+AS := $(DEVKITA64)/bin/$(PREFIX)as
+LD := $(DEVKITA64)/bin/$(PREFIX)ld
+OBJCOPY := $(DEVKITA64)/bin/$(PREFIX)objcopy
+STRIP := $(DEVKITA64)/bin/$(PREFIX)strip
+NM := $(DEVKITA64)/bin/$(PREFIX)nm
+
+# Host compiler for tools
+HOSTCC := gcc
+HOSTCXX := g++
+
+# Flags
+ARCH := -march=armv8-a -mtune=cortex-a57 -mtp=soft -fPIC -mcpu=cortex-a57+fp+simd
+
+CFLAGS := -g -Wall -O2 -ffunction-sections -fdata-sections $(ARCH) -D__SWITCH__ -D__A64__
+CFLAGS += -I$(LIBNX)/include -I$(DEVKITPRO)/portlibs/switch/include
+CFLAGS += -DPLATFORM_SDL2 -DMODERN=1 -DPORTABLE -DUBFIX -D_REENTRANT -DSDL_MAIN_HANDLED
+
+# Includes for project
+CFLAGS += -iquote include -iquote gflib -I$(DEVKITPRO)/portlibs/switch/include/SDL2
+
+# Application Metadata for NRO
+APP_TITLE := Pokemon Emerald
+APP_AUTHOR := Pret & Contributors
+APP_VERSION := 1.0.0
+
+EXE := .elf
+NRO := pokeemerald.nro
+MAP := pokeemerald.map
+
+LDFLAGS := -specs=$(LIBNX)/switch.specs -g $(ARCH) -Wl,-Map,$(MAP) -Wl,--gc-sections -Wl,-z,notext
+LDFLAGS += -L$(LIBNX)/lib -L$(DEVKITPRO)/portlibs/switch/lib
+LDFLAGS += -lSDL2 -lEGL -lGLESv2 -lglapi -ldrm_nouveau -lnx -lm
+
+# Build config
+OBJ_DIR := build/switch
+C_SUBDIR = src
+GFLIB_SUBDIR = gflib
+ASM_SUBDIR = asm
+DATA_SRC_SUBDIR = src/data
+DATA_ASM_SUBDIR = data
+SONG_SUBDIR = sound/songs
+MID_SUBDIR = sound/songs/midi
+SAMPLE_SUBDIR = sound/direct_sound_samples
+CRY_SUBDIR = sound/direct_sound_samples/cries
+
+C_BUILDDIR = $(OBJ_DIR)/$(C_SUBDIR)
+GFLIB_BUILDDIR = $(OBJ_DIR)/$(GFLIB_SUBDIR)
+ASM_BUILDDIR = $(OBJ_DIR)/$(ASM_SUBDIR)
+DATA_ASM_BUILDDIR = $(OBJ_DIR)/$(DATA_ASM_SUBDIR)
+SONG_BUILDDIR = $(OBJ_DIR)/$(SONG_SUBDIR)
+MID_BUILDDIR = $(OBJ_DIR)/$(MID_SUBDIR)
+
+AUTO_GEN_TARGETS :=
+
+# --- Source Discovery & Object Generation ---
+
+C_SRCS_IN := $(wildcard $(C_SUBDIR)/*.c $(C_SUBDIR)/*/*.c $(C_SUBDIR)/*/*/*.c)
+C_SRCS := $(foreach src,$(C_SRCS_IN),$(if $(findstring .inc.c,$(src)),,$(src)))
+C_OBJS := $(patsubst $(C_SUBDIR)/%.c,$(C_BUILDDIR)/%.o,$(C_SRCS))
+
+GFLIB_SRCS := $(wildcard $(GFLIB_SUBDIR)/*.c)
+GFLIB_OBJS := $(patsubst $(GFLIB_SUBDIR)/%.c,$(GFLIB_BUILDDIR)/%.o,$(GFLIB_SRCS))
+
+C_ASM_SRCS += $(wildcard $(C_SUBDIR)/*.s $(C_SUBDIR)/*/*.s $(C_SUBDIR)/*/*/*.s)
+C_ASM_OBJS := $(patsubst $(C_SUBDIR)/%.s,$(C_BUILDDIR)/%.o,$(C_ASM_SRCS))
+
+ASM_SRCS := $(wildcard $(ASM_SUBDIR)/*.s)
+ASM_OBJS := $(patsubst $(ASM_SUBDIR)/%.s,$(ASM_BUILDDIR)/%.o,$(ASM_SRCS))
+
+REGULAR_DATA_ASM_SRCS := $(filter-out $(DATA_ASM_SUBDIR)/maps.s $(DATA_ASM_SUBDIR)/map_events.s, $(wildcard $(DATA_ASM_SUBDIR)/*.s))
+DATA_ASM_SRCS := $(wildcard $(DATA_ASM_SUBDIR)/*.s)
+DATA_ASM_OBJS := $(patsubst $(DATA_ASM_SUBDIR)/%.s,$(DATA_ASM_BUILDDIR)/%.o,$(DATA_ASM_SRCS))
+
+SONG_SRCS := $(wildcard $(SONG_SUBDIR)/*.s)
+SONG_OBJS := $(patsubst $(SONG_SUBDIR)/%.s,$(SONG_BUILDDIR)/%.o,$(SONG_SRCS))
+
+MID_SRCS := $(wildcard $(MID_SUBDIR)/*.mid)
+MID_OBJS := $(patsubst $(MID_SUBDIR)/%.mid,$(MID_BUILDDIR)/%.o,$(MID_SRCS))
+
+# Sound samples
+SAMPLE_SUBDIRS := $(SAMPLE_SUBDIR) $(SAMPLE_SUBDIR)/phonemes
+SAMPLE_SRCS := $(foreach dir,$(SAMPLE_SUBDIRS),$(wildcard $(dir)/*.aif))
+SAMPLE_BINS := $(patsubst %.aif,%.bin,$(SAMPLE_SRCS))
+
+CRY_SRCS := $(wildcard $(CRY_SUBDIR)/*.aif)
+CRY_BINS := $(patsubst $(CRY_SUBDIR)/%.aif,$(CRY_SUBDIR)/%.bin,$(CRY_SRCS))
+
+OBJS := $(C_OBJS) $(GFLIB_OBJS) $(ASM_OBJS) $(DATA_ASM_OBJS) $(SONG_OBJS) $(MID_OBJS)
+SUBDIRS := $(sort $(dir $(OBJS)))
+
+# --- Main Targets ---
+
+all: $(NRO)
+
+$(NRO): $(OBJ_DIR)/$(EXE) $(APP_TITLE).nacp icon.png
+	@echo "Creating RomFS..."
+	@mkdir -p $(OBJ_DIR)/romfs/assets
+	@cp -r assets/* $(OBJ_DIR)/romfs/assets/
+	@echo "Building NRO..."
+	@$(DEVKITTOOLS)/bin/elf2nro $< $@ --nacp=$(APP_TITLE).nacp --romfsdir=$(OBJ_DIR)/romfs --icon=icon.png
+
+$(OBJ_DIR)/$(EXE): $(OBJS)
+	@echo "Linking $(EXE)..."
+	$(CXX) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+# NACP generation
+$(APP_TITLE).nacp:
+	@$(DEVKITTOOLS)/bin/nacptool --create "$(APP_TITLE)" "$(APP_AUTHOR)" "$(APP_VERSION)" $@
+
+# --- Compilation Rules ---
+
+# Create directories
+$(shell mkdir -p $(SUBDIRS))
+
+# Force sound bins generation before objects that might need them
+$(DATA_ASM_BUILDDIR)/sound_data.o: $(SAMPLE_BINS) $(CRY_BINS)
+
+# Helper for C
+define C_DEP
+$1: $2 $$(shell $(SCANINC) -I include -I gflib $2)
+	@echo "Compiling $2..."
+	@$(CC) $(CFLAGS) -E $2 -o $1.i
+	@$(PREPROC) $1.i charmap.txt | $(CC) $(CFLAGS) -x c -c - -o $1
+endef
+
+$(foreach src, $(C_SRCS), $(eval $(call C_DEP,$(patsubst $(C_SUBDIR)/%.c,$(C_BUILDDIR)/%.o,$(src)),$(src))))
+$(foreach src, $(GFLIB_SRCS), $(eval $(call C_DEP,$(patsubst $(GFLIB_SUBDIR)/%.c,$(GFLIB_BUILDDIR)/%.o,$(src)),$(src))))
+
+# ASM Rules (using preproc)
+# Note: we need to use the HOST preproc, but TARGET as
+ASM_PSEUDO_OP_CONV := sed -e 's/\.4byte/\.int/g;s/\.2byte/\.short/g'
+FIX_UNDERSCORE := true
+
+# MIDI rule override
+$(MID_BUILDDIR)/%.o: $(MID_SUBDIR)/%.s
+	@echo "Assembling MIDI $<..."
+	@$(ASM_PSEUDO_OP_CONV) $< | $(CC) $(CFLAGS) -I sound -x assembler - -c -o $@
+
+# Helper for ASM
+define ASM_DEP
+$1: $2
+	@echo "Assembling $<..."
+	@$(PREPROC) $$< charmap.txt | $(CC) -E -I include - | $(ASM_PSEUDO_OP_CONV) | $(CC) $(CFLAGS) -x assembler - -c -o $$@
+endef
+
+%.s: ;
+%.png: ;
+%.pal: ;
+%.aif: ;
+
+%.1bpp: %.png  ; $(GFX) $< $@
+%.4bpp: %.png  ; $(GFX) $< $@
+%.8bpp: %.png  ; $(GFX) $< $@
+%.gbapal: %.pal ; $(GFX) $< $@
+%.gbapal: %.png ; $(GFX) $< $@
+%.lz: % ; $(GFX) $< $@
+%.rl: % ; $(GFX) $< $@
+%.bin: %.aif ; $(AIF) $< $@
+$(CRY_SUBDIR)/%.bin: $(CRY_SUBDIR)/%.aif ; $(AIF) $< $@ --compress
+
+$(foreach src, $(ASM_SRCS), $(eval $(call ASM_DEP,$(patsubst $(ASM_SUBDIR)/%.s,$(ASM_BUILDDIR)/%.o, $(src)),$(src))))
+$(foreach src, $(REGULAR_DATA_ASM_SRCS), $(eval $(call ASM_DEP,$(patsubst $(DATA_ASM_SUBDIR)/%.s,$(DATA_ASM_BUILDDIR)/%.o, $(src)),$(src))))
+$(foreach src, $(C_ASM_SRCS), $(eval $(call ASM_DEP,$(patsubst $(C_SUBDIR)/%.s,$(C_BUILDDIR)/%.o, $(src)),$(src))))
+
+$(SONG_BUILDDIR)/%.o: $(SONG_SUBDIR)/%.s
+	@echo "Assembling song $<..."
+	@$(ASM_PSEUDO_OP_CONV) $< | $(CC) $(CFLAGS) -I sound -x assembler - -c -o $@
+
+# Include generated rules
+include graphics_file_rules.mk
+include map_data_rules.mk
+include spritesheet_rules.mk
+include json_data_rules.mk
+include songs.mk
+
+generated: $(AUTO_GEN_TARGETS)
+
+clean:
+	rm -rf $(OBJ_DIR) $(NRO) $(APP_TITLE).nacp
+
+# Tools Targets
+tools: $(TOOLDIRS)
+
+$(TOOLDIRS):
+	@$(MAKE) -C $@ CC=$(HOSTCC) CXX=$(HOSTCXX)
+
+# Ensure generated files are present before compilation
+$(OBJS): | $(AUTO_GEN_TARGETS)
+
+.PHONY: all clean tools $(TOOLDIRS)
