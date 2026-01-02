@@ -3878,7 +3878,7 @@ extern const u32 gIntroSparkle_Gfx[];
 extern const u32 gIntroFlygonSilhouette_Gfx[];
 extern const u32 gIntroLightning_Gfx[];
 extern const u16 gIntroLightning_Pal[];
-extern const u32 gIntroCopyright_Gfx[];
+extern const u32 gIntroCopyright_Gfx[] ALIGNED(4);
 extern const u32 gIntroCopyright_Tilemap[];
 extern const u16 gIntroCopyright_Pal[16];
 extern const u32 gIntroVolbeat_Gfx[];
