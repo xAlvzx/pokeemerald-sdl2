@@ -136,8 +136,12 @@ void STWI_set_Callback_ID(void (*func)(void)) // name in SDK, but is actually se
 
 u16 STWI_poll_CommandEnd(void)
 {
+#ifndef PORTABLE
     while (gSTWIStatus->sending == 1)
         ;
+#else
+    gSTWIStatus->sending = 0;
+#endif
     return gSTWIStatus->error;
 }
 

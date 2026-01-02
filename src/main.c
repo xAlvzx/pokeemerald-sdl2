@@ -87,14 +87,14 @@ void GameInit(void)
     InitIntrHandlers();
     // m4aSoundInit(); // DEBUG: Disabled to prevent crash (High memory usage)
 #ifndef PORTABLE
-    // InitRFU(); // DEBUG: Disabled to prevent crash (High memory usage)
+    InitRFU();
 #endif
     RtcInit();
     CheckForFlashMemory();
     // InitMainCallbacks(); // DEBUG: Disabled to prevent crash (High memory usage)
-    // InitMapMusic(); // DEBUG: Disabled to prevent crash (High memory usage)
+    InitMapMusic();
 #ifdef BUGFIX
-    SeedRngWithRtc(); // see comment at SeedRngWithRtc definition below
+    SeedRngWithRtc(); 
 #endif
     ResetBgs();
     // SetDefaultFontsPointer(); // DEBUG: Disabled to prevent crash (High memory usage)

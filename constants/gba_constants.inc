@@ -18,6 +18,7 @@
 	.set IWRAM_START, 0x03000000
 	.set IWRAM_END,   IWRAM_START + 0x8000
 
+#ifndef PORTABLE
 	.set PLTT,     0x5000000
 	.set BG_PLTT,  PLTT
 	.set OBJ_PLTT, PLTT + 0x200
@@ -32,6 +33,7 @@
 	.set SOUND_INFO_PTR, 0x3007FF0
 	.set INTR_CHECK,     0x3007FF8
 	.set INTR_VECTOR,    0x3007FFC
+#endif
 
 	.set INTR_FLAG_VBLANK,  1 << 0
 	.set INTR_FLAG_HBLANK,  1 << 1
@@ -51,7 +53,9 @@
 	.set VCOUNT_VBLANK, 160
 	.set TOTAL_SCANLINES, 228
 
+#ifndef PORTABLE
 	.set REG_BASE, 0x4000000 /* I/O register base address*/
+#endif
 
 /* I/O register offsets*/
 	.set OFFSET_REG_DISPCNT,     0x0
