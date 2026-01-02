@@ -54,12 +54,25 @@ void CpuSet(const void *src, void *dst, u32 cnt)
     // 32-bit ?
     if ((cnt >> 26) & 1) {
         
-        //assert(((uintptr_t)src & ~3) == (uintptr_t)src);
-        //assert(((uintptr_t)dst & ~3) == (uintptr_t)dst);
-        
-        // needed for 32-bit mode!
-        //source = (u8 *)((uint32_t )source & ~3);
-        //dest = (u8 *)((uint32_t )dest & ~3);
+        // Align check for 32-bit access
+        if (((uintptr_t)source & 3) || ((uintptr_t)dest & 3))
+        {
+            // Unaligned access, use byte-wise copy or memcpy
+             if ((cnt >> 24) & 1) {
+                // fill
+                uint32_t value = CPUReadMemory(source);
+                while (count) {
+                    memcpy(dest, &value, 4);
+                    dest += 4;
+                    count--;
+                }
+             } else {
+                 // copy
+                 // memcpy handles unaligned access correctly
+                 memcpy(dest, source, count * 4);
+             }
+             return;
+        }
 
         // fill ?
         if ((cnt >> 24) & 1) {
@@ -79,10 +92,6 @@ void CpuSet(const void *src, void *dst, u32 cnt)
             }
         }
     } else {
-        // No align on 16-bit fill?
-        //assert(((uintptr_t)src & ~1) == (uintptr_t)src);
-        //assert(((uintptr_t)dst & ~1) == (uintptr_t)dst);
-
         // 16-bit fill?
         if ((cnt >> 24) & 1) {
             uint16_t value = CPUReadHalfWord(source);
@@ -116,8 +125,27 @@ void CpuFastSet(const void *src, void *dst, u32 cnt)
     const u8 *source = src;
     u8 *dest = dst;
     
-    //source = (u8 *)((uint32_t )source & ~3);
-    //dest = (u8 *)((uint32_t )dest & ~3);
+    // Align check for 32-bit access (CpuFastSet is always 32-bit)
+    if (((uintptr_t)source & 3) || ((uintptr_t)dest & 3))
+    {
+        // Unaligned access
+        if((cnt >> 24) & 1) {
+            // fill
+            uint32_t value = CPUReadMemory(source);
+            while(count > 0) {
+                // BIOS always transfers 32 bytes at a time
+                for(int i = 0; i < 8; i++) {
+                    memcpy(dest, &value, 4);
+                    dest += 4;
+                }
+                count -= 8;
+            }
+        } else {
+            // copy
+            memcpy(dest, source, count * 4);
+        }
+        return;
+    }
 
     // fill?
     if((cnt >> 24) & 1) {

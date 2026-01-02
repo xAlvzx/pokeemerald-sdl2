@@ -87,7 +87,7 @@ struct GpuState
     struct OamData spriteList[MAX_OAM_SPRITES];
     struct GpuMatrix spriteMatrices[MAX_OAM_SPRITES];
 
-    unsigned char palette[PLTT_SIZE];
+    unsigned char palette[PLTT_SIZE] ALIGNED(4);
 
     size_t gfxDataSize;
     size_t tileMapsSize;

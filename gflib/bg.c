@@ -403,6 +403,9 @@ u16 LoadBgTiles(u8 bg, const void *src, size_t size, size_t destOffset)
     size_t tileOffset;
     u8 cursor;
 
+    if (bg >= NUM_BACKGROUNDS)
+        return -1;
+
     if (GetBgControlAttribute(bg, BG_CTRL_ATTR_PALETTEMODE) == 0)
     {
         tileOffset = (sGpuBgConfigs2[bg].baseTile + destOffset) * 0x20;
@@ -427,6 +430,9 @@ u16 LoadBgTiles(u8 bg, const void *src, size_t size, size_t destOffset)
 
 u16 LoadBgTilemap(u8 bg, const void *src, size_t size, size_t destOffset)
 {
+    if (bg >= NUM_BACKGROUNDS)
+        return -1;
+
     u8 cursor = LoadBgVram(bg, src, size, destOffset * 2, 0x2);
 
     if (cursor == 0xFF)

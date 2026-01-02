@@ -6,7 +6,7 @@
 
 extern const u8 gCgb3Vol[];
 
-struct SoundInfo gSoundInfo;
+struct SoundInfo gSoundInfo ALIGNED(4);
 struct PokemonCrySong gPokemonCrySongs[MAX_POKEMON_CRIES];
 struct MusicPlayerInfo gPokemonCryMusicPlayers[MAX_POKEMON_CRIES];
 struct CgbChannel gCgbChans[4];

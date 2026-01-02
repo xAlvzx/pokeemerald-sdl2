@@ -3,6 +3,10 @@
 
 #include <stddef.h>
 
+#if defined(__A64__) || defined(__x86_64__) || defined(__LP64__)
+#define VER_64BIT
+#endif
+
 #define TRUE  1
 #define FALSE 0
 

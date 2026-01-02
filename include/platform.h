@@ -10,7 +10,6 @@ void Platform_QueueAudio(float *audioBuffer, s32 samplesPerFrame);
 u16 Platform_GetKeyInput(void);
 void Platform_GetStatus(struct SiiRtcInfo *rtc);
 void Platform_SetStatus(struct SiiRtcInfo *rtc);
-static void UpdateInternalClock(void);
 void Platform_GetDateTime(struct SiiRtcInfo *rtc);
 void Platform_SetDateTime(struct SiiRtcInfo *rtc);
 void Platform_GetTime(struct SiiRtcInfo *rtc);
