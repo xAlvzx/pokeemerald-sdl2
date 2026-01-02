@@ -22,7 +22,7 @@ struct MusicPlayerTrack gMPlayTrack_SE2[9];
 struct MusicPlayerTrack gMPlayTrack_SE3[1];
 u8 gMPlayMemAccArea[0x10];
 
-static MPlayFunc gMPlayJumpTable[36] = {
+MPlayFunc gMPlayJumpTable[36] = {
     (MPlayFunc)MP2K_event_fine,
     (MPlayFunc)MP2K_event_goto,
     (MPlayFunc)MP2K_event_patt,
@@ -60,6 +60,13 @@ static MPlayFunc gMPlayJumpTable[36] = {
     (MPlayFunc)MP2KClearChain,
     (MPlayFunc)SoundMainBTM
 };
+
+#ifdef PORTABLE
+void SoundMain(void)
+{
+    RunMixerFrame();
+}
+#endif
 
 bool8 gSoundInit = FALSE;
 

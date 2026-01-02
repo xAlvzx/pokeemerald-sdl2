@@ -97,7 +97,7 @@ void GameInit(void)
     SeedRngWithRtc(); 
 #endif
     ResetBgs();
-    // SetDefaultFontsPointer(); // DEBUG: Disabled to prevent crash (High memory usage)
+    SetDefaultFontsPointer(); // DEBUG: Disabled to prevent crash (High memory usage)
 
     InitHeap();
 

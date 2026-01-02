@@ -2,6 +2,8 @@
 	.include "constants/gba_constants.inc"
 	.include "constants/m4a_constants.inc"
 
+#ifndef PORTABLE
+
 	.syntax unified
 
 	.text
@@ -1914,3 +1916,4 @@ _081DDD90:
 sDecodingBuffer: @ Used as a buffer for audio decoded from compressed DPCM
 	.space 0x40
 	.size sDecodingBuffer, .-sDecodingBuffer
+#endif // PORTABLE
