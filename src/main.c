@@ -85,19 +85,42 @@ void GameInit(void)
     REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
     InitKeys();
     InitIntrHandlers();
+    // m4aSoundInit(); // DEBUG: Disabled to prevent crash (High memory usage)
+#ifndef PORTABLE
+    // InitRFU(); // DEBUG: Disabled to prevent crash (High memory usage)
+#endif
     RtcInit();
     CheckForFlashMemory();
+    // InitMainCallbacks(); // DEBUG: Disabled to prevent crash (High memory usage)
+    // InitMapMusic(); // DEBUG: Disabled to prevent crash (High memory usage)
+#ifdef BUGFIX
+    SeedRngWithRtc(); // see comment at SeedRngWithRtc definition below
+#endif
     ResetBgs();
-    // SetDefaultFontsPointer();
+    // SetDefaultFontsPointer(); // DEBUG: Disabled to prevent crash (High memory usage)
 
     InitHeap();
 
     gSoftResetDisabled = FALSE;
-    /*
-    InitMainCallbacks();
-    InitMapMusic();
-    ... (rest of the code)
-    */
+
+#ifndef PORTABLE
+    if (gFlashMemoryPresent != TRUE)
+        SetMainCallback2(NULL);
+#endif
+
+    gLinkTransferringData = FALSE;
+
+#ifndef PORTABLE
+    sUnusedVar = 0xFC0;
+#endif
+
+#ifndef NDEBUG
+#if (LOG_HANDLER == LOG_HANDLER_MGBA_PRINT)
+    (void) MgbaOpen();
+#elif (LOG_HANDLER == LOG_HANDLER_AGB_PRINT)
+    AGBPrintfInit();
+#endif
+#endif
 }
 
 void GameLoop(void)
