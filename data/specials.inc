@@ -6,7 +6,7 @@
 	.endm
 
 .set __special__, 0
-		.align 2
+		.balign 4
 gSpecials::
 	def_special HealPlayerParty
 	def_special SetCableClubWarp

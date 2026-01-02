@@ -16,7 +16,7 @@
 
 	.section script_data, "aw"
 
-.align 2
+.balign 4
 gBattleScriptsForMoveEffects::
 	.quad BattleScript_EffectHit                    /* EFFECT_HIT*/
 	.quad BattleScript_EffectSleep                  /* EFFECT_SLEEP*/

@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup179::
 	voice_keysplit_all voicegroup177
 	voice_keysplit_all voicegroup176

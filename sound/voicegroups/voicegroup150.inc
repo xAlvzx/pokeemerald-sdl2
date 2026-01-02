@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup150::
 	voice_keysplit_all voicegroup002
 	voice_directsound 60, 0, DirectSoundWaveData_steinway_b_piano, 255, 165, 103, 235

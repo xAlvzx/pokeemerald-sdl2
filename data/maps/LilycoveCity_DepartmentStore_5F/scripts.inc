@@ -27,7 +27,7 @@ LilycoveCity_DepartmentStore_5F_EventScript_ClerkFarLeft::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_5F_Pokemart_Dolls:
 	.short DECOR_PICHU_DOLL
 	.short DECOR_PIKACHU_DOLL
@@ -55,7 +55,7 @@ LilycoveCity_DepartmentStore_5F_EventScript_ClerkMidLeft::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_5F_Pokemart_Cushions:
 	.short DECOR_PIKA_CUSHION
 	.short DECOR_ROUND_CUSHION
@@ -80,7 +80,7 @@ LilycoveCity_DepartmentStore_5F_EventScript_ClerkMidRight::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_5F_Pokemart_Posters:
 	.short DECOR_BALL_POSTER
 	.short DECOR_GREEN_POSTER
@@ -105,7 +105,7 @@ LilycoveCity_DepartmentStore_5F_EventScript_ClerkFarRight::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_5F_Pokemart_Mats:
 	.short DECOR_SURF_MAT
 	.short DECOR_THUNDER_MAT

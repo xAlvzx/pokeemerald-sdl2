@@ -150,7 +150,7 @@ SlateportCity_EventScript_EnergyGuru::
 	release
 	end
 
-	.align 2
+	.balign 4
 SlateportCity_Pokemart_EnergyGuru:
 	.short ITEM_PROTEIN
 	.short ITEM_IRON
@@ -513,7 +513,7 @@ SlateportCity_EventScript_DollClerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 SlateportCity_PokemartDecor_Dolls:
 	.short DECOR_AZURILL_DOLL
 	.short DECOR_MARILL_DOLL
@@ -538,7 +538,7 @@ SlateportCity_EventScript_DecorClerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 SlateportCity_PokemartDecor:
 	.short DECOR_RED_BRICK
 	.short DECOR_BLUE_BRICK
@@ -568,7 +568,7 @@ SlateportCity_EventScript_PowerTMClerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 SlateportCity_Pokemart_PowerTMs:
 	.short ITEM_TM_HIDDEN_POWER
 	.short ITEM_TM_SECRET_POWER

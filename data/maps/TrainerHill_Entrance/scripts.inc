@@ -252,7 +252,7 @@ TrainerHill_Entrance_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 TrainerHill_Entrance_Pokemart_Basic:
 	.short ITEM_SUPER_POTION
 	.short ITEM_ANTIDOTE
@@ -275,7 +275,7 @@ TrainerHill_Entrance_EventScript_ExpandedPokemart::
 	release
 	end
 
-	.align 2
+	.balign 4
 TrainerHill_Entrance_Pokemart_Expanded:
 	.short ITEM_HYPER_POTION
 	.short ITEM_MAX_POTION

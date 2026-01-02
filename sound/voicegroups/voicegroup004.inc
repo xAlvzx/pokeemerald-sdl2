@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup004::
 	voice_directsound_no_resample 66, 34, DirectSoundWaveData_sc88pro_tambourine, 255, 127, 77, 204
 	voice_directsound_no_resample 64, 14, DirectSoundWaveData_trinity_cymbal_crash, 255, 231, 0, 188

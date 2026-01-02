@@ -1102,14 +1102,14 @@
 	.endm
 
 	/* Opens the Pokemart system, offering the specified products for sale.*/
-	/* Products should be a list of .short item values preceded by an .align 2*/
+	/* Products should be a list of .short item values preceded by an .balign 4*/
 	.macro pokemart products:req
 	.byte 0x86
 	.quad \products
 	.endm
 
 	/* Opens the Pokemart system and treats the list of items as decorations.*/
-	/* Products should be a list of .short decoration values preceded by an .align 2*/
+	/* Products should be a list of .short decoration values preceded by an .balign 4*/
 	.macro pokemartdecoration products:req
 	.byte 0x87
 	.quad \products

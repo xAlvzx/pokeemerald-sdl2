@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 gScriptCmdTable::
 	.quad ScrCmd_nop      	                        /* 0x00*/
 	.quad ScrCmd_nop1                              /* 0x01*/

@@ -13,7 +13,7 @@
 	enum MON_3
 	enum MON_4
 
-	.align 2
+	.balign 4
 gContestAI_ScriptsTable::
 	.quad AI_CheckBadMove      /* CONTEST_AI_CHECK_BAD_MOVE*/
 	.quad AI_CheckCombo        /* CONTEST_AI_CHECK_COMBO*/

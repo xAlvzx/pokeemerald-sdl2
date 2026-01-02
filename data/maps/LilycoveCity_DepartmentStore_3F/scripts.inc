@@ -11,7 +11,7 @@ LilycoveCity_DepartmentStore_3F_EventScript_ClerkLeft::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_3F_Pokemart_Vitamins:
 	.short ITEM_PROTEIN
 	.short ITEM_CALCIUM
@@ -33,7 +33,7 @@ LilycoveCity_DepartmentStore_3F_EventScript_ClerkRight::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_3F_Pokemart_StatBoosters:
 	.short ITEM_X_SPEED
 	.short ITEM_X_SPECIAL

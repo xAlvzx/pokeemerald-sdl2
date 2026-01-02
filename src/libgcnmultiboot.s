@@ -236,7 +236,7 @@ GameCubeMultiBoot_Main_Return2:
 	bx lr
 	thumb_func_end GameCubeMultiBoot_Main
 
-	.align 2, 0
+	.balign 4, 0
 
 pool_HashVal: .int 0xa1c1
 
@@ -355,7 +355,7 @@ GameCubeMultiBoot_HandleSerialInterrupt:
 
 	mov pc, r2
 
-	.align 2, 0
+	.balign 4, 0
 
 @ Zero the status and the interrupt handler pointer.
 @ Commands from the GameCube will not be processed after this is executed
@@ -398,7 +398,7 @@ GameCubeMultiBoot_BeginHandshake:
 	adr r2, GcMbIntrHandler_CheckGameCodeSent
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckGameCodeSent:
 	lsls r1, 31
@@ -410,7 +410,7 @@ GcMbIntrHandler_CheckGameCodeSent:
 	adr r2, GcMbIntrHandler_CheckHandshakeResponse
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckHandshakeResponse:
 	lsrs r1, 1 @ is receive complete?
@@ -427,7 +427,7 @@ GameCubeMultiBoot_CheckHandshakeResponse:
 	adr r2, GcMbIntrHandler_ReceiveKeyA
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_ReceiveKeyA:
 	lsrs r1, 1 @ is receive complete?
@@ -471,7 +471,7 @@ GameCubeMultiBoot_KeyBCheckEnd:
 	adr r2, GcMbIntrHandler_CheckKeyBSent
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckKeyBSent:
 	lsls r1, 31
@@ -480,7 +480,7 @@ GcMbIntrHandler_CheckKeyBSent:
 	adr r2, GcMbIntrHandler_CheckImageSizeResponse
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckImageSizeResponse:
 	lsrs r1, 1 @ is receive complete?
@@ -503,7 +503,7 @@ GcMbIntrHandler_StopIfNotEqual:
 	adr r2, GcMbIntrHandler_CheckImageResponse
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckImageResponse:
 	lsrs r1, 1 @ is receive complete?
@@ -536,7 +536,7 @@ GcMbIntrHandler_SendCounter2:
 	adr r2, GcMbIntrHandler_CheckCounter2Sent
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckCounter2Sent:
 	lsls r1, 31
@@ -551,7 +551,7 @@ GcMbIntrHandler_StopIfSendFailed:
 	adr r2, GcMbIntrHandler_CheckKeyCDerivationSent
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckKeyCDerivationSent:
 	lsls r1, 31
@@ -560,7 +560,7 @@ GcMbIntrHandler_CheckKeyCDerivationSent:
 	adr r2, GcMbIntrHandler_CheckBootKeyResponse
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_CheckBootKeyResponse:
 	lsrs r1, 1 @ is receive complete?
@@ -578,7 +578,7 @@ GameCubeMultiBoot_CheckBootKeyResponse:
 	adr r2, GcMbIntrHandler_StopUnconditionally
 	b GameCubeMultiBoot_SetInterruptHandler
 
-	.align 2, 0
+	.balign 4, 0
 
 GcMbIntrHandler_StopUnconditionally:
 	b GcMbIntrHandler_Stop
@@ -624,7 +624,7 @@ GameCubeMultiBoot_Quit:
 	bx lr
 	thumb_func_end GameCubeMultiBoot_Quit
 
-	.align 2, 0
+	.balign 4, 0
 
 GameCubeMultiBoot_MaximumImageSizeUInt32s: .int 0x4000
 
@@ -638,4 +638,4 @@ pool_RubyUSAGameCode: .ascii "AXVE"
 
 pool_MultiBootLoadAddr: .int EWRAM_START
 
-	.align 2, 0 @ Don't pad with nop.
+	.balign 4, 0 @ Don't pad with nop.

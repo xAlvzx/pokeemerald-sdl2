@@ -11,7 +11,7 @@
 
 	.section script_data, "aw"
 
-	.align 2
+	.balign 4
 gBattlescriptsForBallThrow::
 	.quad BattleScript_BallThrow        /* ITEM_NONE*/
 	.quad BattleScript_BallThrow        /* ITEM_MASTER_BALL*/
@@ -27,7 +27,7 @@ gBattlescriptsForBallThrow::
 	.quad BattleScript_BallThrow        /* ITEM_LUXURY_BALL*/
 	.quad BattleScript_BallThrow        /* ITEM_PREMIER_BALL*/
 
-	.align 2
+	.balign 4
 gBattlescriptsForUsingItem::
 	.quad BattleScript_PlayerUsesItem
 	.quad BattleScript_OpponentUsesHealItem        /* AI_ITEM_FULL_RESTORE*/
@@ -36,11 +36,11 @@ gBattlescriptsForUsingItem::
 	.quad BattleScript_OpponentUsesXItem           /* AI_ITEM_X_STAT*/
 	.quad BattleScript_OpponentUsesGuardSpec       /* AI_ITEM_GUARD_SPEC*/
 
-	.align 2
+	.balign 4
 gBattlescriptsForRunningByItem::
 	.quad BattleScript_RunByUsingItem
 
-	.align 2
+	.balign 4
 gBattlescriptsForSafariActions::
 	.quad BattleScript_ActionWatchesCarefully
 	.quad BattleScript_ActionGetNear

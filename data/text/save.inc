@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 gText_ConfirmSave::
 	.string "Would you like to save the game?$"
 

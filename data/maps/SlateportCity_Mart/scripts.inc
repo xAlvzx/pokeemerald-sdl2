@@ -11,7 +11,7 @@ SlateportCity_Mart_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 SlateportCity_Mart_Pokemart:
 	.short ITEM_POKE_BALL
 	.short ITEM_GREAT_BALL

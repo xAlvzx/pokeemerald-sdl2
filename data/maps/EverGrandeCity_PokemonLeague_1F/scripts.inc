@@ -36,7 +36,7 @@ EverGrandeCity_PokemonLeague_1F_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 EverGrandeCity_PokemonLeague_1F_Pokemart:
 	.short ITEM_ULTRA_BALL
 	.short ITEM_HYPER_POTION

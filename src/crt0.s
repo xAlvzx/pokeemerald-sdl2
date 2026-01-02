@@ -4,7 +4,7 @@
 
 	.arm
 
-	.align 2, 0
+	.balign 4, 0
 Init::
 	mov r0, #PSR_IRQ_MODE
 	msr cpsr_cf, r0
@@ -24,14 +24,14 @@ Init::
 	bx r1
 	b Init
 
-	.align 2, 0
+	.balign 4, 0
 sp_sys: .word IWRAM_END - 0x1c0
 sp_irq: .word IWRAM_END - 0x60
 
 	.pool
 
 	.arm
-	.align 2, 0
+	.balign 4, 0
 IntrMain::
 	mov r3, #REG_BASE
 	add r3, r3, #OFFSET_REG_IE
@@ -123,4 +123,4 @@ IntrMain_RetAddr:
 
 	.pool
 
-	.align 2, 0 @ Don't pad with nop.
+	.balign 4, 0 @ Don't pad with nop.

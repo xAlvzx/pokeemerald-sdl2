@@ -16,7 +16,7 @@ RustboroCity_Mart_EventScript_PokemartBasic::
 	release
 	end
 
-	.align 2
+	.balign 4
 RustboroCity_Mart_Pokemart_Basic:
 	.short ITEM_POKE_BALL
 	.short ITEM_POTION
@@ -38,7 +38,7 @@ RustboroCity_Mart_EventScript_PokemartExpanded::
 	release
 	end
 
-	.align 2
+	.balign 4
 RustboroCity_Mart_Pokemart_Expanded:
 	.short ITEM_POKE_BALL
 	.short ITEM_TIMER_BALL

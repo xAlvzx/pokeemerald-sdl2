@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup104::
 	voice_keysplit_all voicegroup003
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0

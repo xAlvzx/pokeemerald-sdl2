@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 
 gSongTable::
 	song mus_dummy, 0, 0
@@ -612,6 +612,6 @@ gSongTable::
 	song ph_nurse_held, 2, 2
 	song ph_nurse_solo, 2, 2
 
-	.align 2
+	.balign 4
 dummy_song_header:
 	.byte 0, 0, 0, 0

@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup130::
 	voice_directsound 60, 0, DirectSoundWaveData_Phoneme_1, 255, 0, 255, 0
 	voice_directsound 60, 0, DirectSoundWaveData_Phoneme_2, 255, 0, 255, 0

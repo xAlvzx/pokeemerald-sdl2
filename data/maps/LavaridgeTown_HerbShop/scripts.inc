@@ -11,7 +11,7 @@ LavaridgeTown_HerbShop_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 LavaridgeTown_HerbShop_Pokemart:
 	.short ITEM_ENERGY_POWDER
 	.short ITEM_ENERGY_ROOT

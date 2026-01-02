@@ -12,7 +12,7 @@ PetalburgCity_Mart_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 PetalburgCity_Mart_Pokemart_Basic:
 	.short ITEM_POKE_BALL
 	.short ITEM_POTION
@@ -35,7 +35,7 @@ PetalburgCity_Mart_EventScript_ExpandedItems::
 	release
 	end
 
-	.align 2
+	.balign 4
 PetalburgCity_Mart_Pokemart_Expanded:
 	.short ITEM_POKE_BALL
 	.short ITEM_GREAT_BALL

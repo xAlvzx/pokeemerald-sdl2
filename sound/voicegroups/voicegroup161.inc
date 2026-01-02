@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup161::
 	voice_keysplit_all voicegroup002
 	voice_keysplit voicegroup005, KeySplitTable1

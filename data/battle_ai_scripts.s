@@ -13,7 +13,7 @@
 
 	.section script_data, "aw"
 
-	.align 2
+	.balign 4
 gBattleAI_ScriptsTable::
 	.quad AI_CheckBadMove          /* AI_SCRIPT_CHECK_BAD_MOVE*/
 	.quad AI_TryToFaint            /* AI_SCRIPT_TRY_TO_FAINT*/

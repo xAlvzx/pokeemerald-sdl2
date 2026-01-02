@@ -11,7 +11,7 @@ VerdanturfTown_Mart_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 VerdanturfTown_Mart_Pokemart:
 	.short ITEM_GREAT_BALL
 	.short ITEM_NEST_BALL

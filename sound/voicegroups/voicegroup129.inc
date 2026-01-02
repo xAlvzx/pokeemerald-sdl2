@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup129::
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0
 	voice_directsound 60, 0, DirectSoundWaveData_sc88pro_mute_high_conga, 255, 0, 255, 0

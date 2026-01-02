@@ -12,7 +12,7 @@ OldaleTown_Mart_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 OldaleTown_Mart_Pokemart_Basic:
 	.short ITEM_POTION
 	.short ITEM_ANTIDOTE
@@ -28,7 +28,7 @@ OldaleTown_Mart_ExpandedItems::
 	release
 	end
 
-	.align 2
+	.balign 4
 OldaleTown_Mart_Pokemart_Expanded:
 	.short ITEM_POKE_BALL
 	.short ITEM_POTION

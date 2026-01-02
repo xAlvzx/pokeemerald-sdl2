@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup127::
 	voice_directsound 60, 0, DirectSoundWaveData_unknown_synth_snare, 255, 249, 103, 165
 	voice_square_1 60, 0, 0, 2, 0, 0, 15, 0

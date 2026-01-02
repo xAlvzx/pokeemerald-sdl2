@@ -23,7 +23,7 @@ LilycoveCity_DepartmentStore_2F_EventScript_ClerkLeft::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_2F_Pokemart1:
 	.short ITEM_POKE_BALL
 	.short ITEM_GREAT_BALL
@@ -50,7 +50,7 @@ LilycoveCity_DepartmentStore_2F_EventScript_ClerkRight::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_2F_Pokemart2:
 	.short ITEM_POTION
 	.short ITEM_SUPER_POTION

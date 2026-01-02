@@ -51,7 +51,7 @@ Route104_PrettyPetalFlowerShop_EventScript_SellDecorations::
 	release
 	end
 
-	.align 2
+	.balign 4
 Route104_PrettyPetalFlowerShop_Pokemart_Plants:
 	.short DECOR_RED_PLANT
 	.short DECOR_TROPICAL_PLANT

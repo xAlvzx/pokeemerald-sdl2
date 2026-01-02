@@ -429,4 +429,4 @@ RLUnCompVram:
 	thumb_func_end RLUnCompVram
 	.endif
 
-	.align 2, 0 @ Don't pad with nop
+	.balign 4, 0 @ Don't pad with nop

@@ -11,7 +11,7 @@ FortreeCity_Mart_EventScript_Clerk::
 	release
 	end
 
-	.align 2
+	.balign 4
 FortreeCity_Mart_Pokemart:
 	.short ITEM_GREAT_BALL
 	.short ITEM_ULTRA_BALL

@@ -1,4 +1,4 @@
-	.align 2
+	.balign 4
 voicegroup113::
 	voice_keysplit_all voicegroup002
 	voice_programmable_wave_alt 60, 0, ProgrammableWaveData_23, 0, 7, 15, 1

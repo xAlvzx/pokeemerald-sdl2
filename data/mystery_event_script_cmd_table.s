@@ -1,6 +1,6 @@
 	.section script_data, "aw"
 
-	.align 2
+	.balign 4
 gMysteryEventScriptCmdTable::
 	.quad MEScrCmd_nop                 /* 0x00*/
 	.quad MEScrCmd_checkcompat         /* 0x01*/

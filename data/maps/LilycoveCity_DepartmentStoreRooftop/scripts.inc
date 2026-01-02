@@ -26,7 +26,7 @@ LilycoveCity_DepartmentStoreRooftop_EventScript_SaleWoman::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStoreRooftop_PokemartDecor_ClearOutSale:
 	.short DECOR_MUD_BALL
 	.short DECOR_FENCE_LENGTH

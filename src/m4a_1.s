@@ -78,7 +78,7 @@ SoundMain_5:
 	ldr r3, lt_SoundMainRAM_Buffer
 	bx r3
 
-	.align 2, 0
+	.balign 4, 0
 lt_SOUND_INFO_PTR:        .word SOUND_INFO_PTR
 lt_ID_NUMBER:             .word ID_NUMBER
 lt_SoundMainRAM_Buffer:   .word SoundMainRAM_Buffer + 1
@@ -793,7 +793,7 @@ MPlayJumpTableCopy_Loop:
 	bx r12
 	thumb_func_end MPlayJumpTableCopy
 
-	.align 2, 0
+	.balign 4, 0
 	.thumb_func
 ldrb_r3_r2:
 	ldrb r3, [r2]
@@ -817,7 +817,7 @@ chk_adr_r2_done:
 	pop {r0}
 	bx lr
 
-	.align 2, 0
+	.balign 4, 0
 lt_MPlayJumpTableTemplate: .word gMPlayJumpTableTemplate
 
 	thumb_func_start ld_r3_tp_adr_i
@@ -1461,7 +1461,7 @@ _081DDA6C:
 call_r3:
 	bx r3
 
-	.align 2, 0
+	.balign 4, 0
 lt_gClockTable:     .word gClockTable
 lt2_SOUND_INFO_PTR: .word SOUND_INFO_PTR
 lt2_ID_NUMBER:      .word ID_NUMBER
@@ -1910,7 +1910,7 @@ _081DDD90:
 	bx r12
 	thumb_func_end ply_mod
 
-	.align 2, 0 @ Don't pad with nop.
+	.balign 4, 0 @ Don't pad with nop.
 
 	.bss
 sDecodingBuffer: @ Used as a buffer for audio decoded from compressed DPCM

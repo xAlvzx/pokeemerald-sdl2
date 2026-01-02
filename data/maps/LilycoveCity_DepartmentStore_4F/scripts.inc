@@ -23,7 +23,7 @@ LilycoveCity_DepartmentStore_4F_EventScript_ClerkLeft::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_4F_Pokemart_AttackTMs:
 	.short ITEM_TM_FIRE_BLAST
 	.short ITEM_TM_THUNDER
@@ -43,7 +43,7 @@ LilycoveCity_DepartmentStore_4F_EventScript_ClerkRight::
 	release
 	end
 
-	.align 2
+	.balign 4
 LilycoveCity_DepartmentStore_4F_Pokemart_DefenseTMs:
 	.short ITEM_TM_PROTECT
 	.short ITEM_TM_SAFEGUARD
