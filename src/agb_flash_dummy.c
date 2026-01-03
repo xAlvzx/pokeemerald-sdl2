@@ -40,7 +40,7 @@ u16 WaitForFlashWrite_DUMMY(u8 phase, u8 *addr, u8 lastData)
 
 u16 EraseFlashChip_DUMMY(void)
 {
-    memset(FLASH_BASE, 0xFF, sizeof(FLASH_BASE));
+    memset(FLASH_BASE, 0xFF, FLASH_SIZE);
     return 0;
 }
 

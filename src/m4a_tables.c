@@ -646,15 +646,15 @@ const XcmdFunc gXcmdTable[] ALIGNED(8) = {
 };
 
 // Music Player Tables
-const struct MusicPlayer gMPlayTable[] ALIGNED(8) = {
-    { &gMPlayInfo_BGM, gMPlayTrack_BGM, 10, 0 },
-    { &gMPlayInfo_SE1, gMPlayTrack_SE1, 3, 1 },
-    { &gMPlayInfo_SE2, gMPlayTrack_SE2, 9, 1 },
-    { &gMPlayInfo_SE3, gMPlayTrack_SE3, 1, 0 }
+struct MusicPlayer gMPlayTable[] ALIGNED(8) = {
+    { &gMPlayInfo_BGM, gMPlayTrack_BGM, 16, 0 },
+    { &gMPlayInfo_SE1, gMPlayTrack_SE1, 2, 0 },
+    { &gMPlayInfo_SE2, gMPlayTrack_SE2, 2, 0 },
+    { &gMPlayInfo_SE3, gMPlayTrack_SE3, 1, 0 },
 };
 
 // Song Table
-const struct Song gSongTable[] ALIGNED(8) = {
+struct Song gSongTable[] ALIGNED(8) = {
     { (struct SongHeader *)&mus_dummy, 0, 0 },
     { (struct SongHeader *)&se_use_item, 1, 1 },
     { (struct SongHeader *)&se_pc_login, 1, 1 },

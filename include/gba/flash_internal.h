@@ -4,7 +4,9 @@
 #ifndef PORTABLE
 #define FLASH_BASE ((u8 *)0xE000000)
 #else
-extern unsigned char FLASH_BASE[131072*4];
+#define FLASH_SIZE (131072 * 4)
+extern unsigned char gFLASH_BASE[];
+#define FLASH_BASE gFLASH_BASE
 #endif
 
 #define FLASH_WRITE(addr, data) ((*(vu8 *)(FLASH_BASE + (addr))) = (data))

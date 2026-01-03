@@ -46,9 +46,20 @@
 #else
 extern struct SoundInfo * SOUND_INFO_PTR;
 extern unsigned short INTR_CHECK;
-extern void * INTR_VECTOR;
+extern void * gINTR_VECTOR[];
+#define INTR_VECTOR (gINTR_VECTOR[0])
+
+extern unsigned char gEWRAM[0x40000];
+extern unsigned char gIWRAM[0x8000];
+extern unsigned char gVRAM[0x18000];
+
+#define EWRAM_START ((uintptr_t)gEWRAM)
+#define EWRAM_END   (EWRAM_START + 0x40000)
+#define IWRAM_START ((uintptr_t)gIWRAM)
+#define IWRAM_END   (IWRAM_START + 0x8000)
 
 #define PLTT      ((unsigned char*)(gpu.palette))
+#define VRAM      ((unsigned char*)(gVRAM))
 #endif
 
 #define BG_PLTT       PLTT
@@ -56,6 +67,10 @@ extern void * INTR_VECTOR;
 #ifndef PORTABLE
 #define VRAM_SIZE 0x18000
 #define VRAM      0x6000000
+#else
+#define VRAM_SIZE 0x18000
+#undef VRAM
+#define VRAM ((unsigned char*)(gVRAM))
 #endif
 
 #define BG_CHAR_SIZE      (0x4000*16)

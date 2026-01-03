@@ -483,6 +483,7 @@ static void LoadBorders(void)
 int main(int argc, char **argv)
 {
 #ifdef __SWITCH__
+    return 0; // DIAGNOSTIC: Immediate return to homebrew menu
     // Step 1: Basic libnx init (Known to work)
     consoleInit(NULL);
     padConfigureInput(1, HidNpadStyleSet_NpadStandard);
@@ -635,6 +636,9 @@ int main(int argc, char **argv)
 #endif
 }
 
+extern unsigned char gFLASH_BASE[];
+#define FLASH_BASE gFLASH_BASE
+
 static void ReadSaveFile(char *path)
 {
     // Check whether the saveFile exists, and create it if not
@@ -652,12 +656,12 @@ static void ReadSaveFile(char *path)
 
         // Only read as many bytes as fit inside the buffer
         // or as many bytes as are in the file
-        int bytesToRead = (fileSize < sizeof(FLASH_BASE)) ? fileSize : sizeof(FLASH_BASE);
+        int bytesToRead = (fileSize < 0x20000) ? fileSize : 0x20000;
 
         int bytesRead = fread(FLASH_BASE, 1, bytesToRead, sSaveFile);
 
         // Fill the buffer if the savefile was just created or smaller than the buffer itself
-        for (int i = bytesRead; i < sizeof(FLASH_BASE); i++)
+        for (int i = bytesRead; i < 0x20000; i++)
         {
             FLASH_BASE[i] = 0xFF;
         }
@@ -665,7 +669,7 @@ static void ReadSaveFile(char *path)
     else
     {
         // Fallback: Fill buffer with 0xFF if file couldn't be opened
-        for (int i = 0; i < sizeof(FLASH_BASE); i++)
+        for (int i = 0; i < 0x20000; i++)
         {
             FLASH_BASE[i] = 0xFF;
         }
@@ -678,7 +682,7 @@ static void StoreSaveFile()
     if (sSaveFile != NULL)
     {
         fseek(sSaveFile, 0, SEEK_SET);
-        fwrite(FLASH_BASE, 1, sizeof(FLASH_BASE), sSaveFile);
+        fwrite(FLASH_BASE, 1, 0x20000, sSaveFile);
     }
 }
 

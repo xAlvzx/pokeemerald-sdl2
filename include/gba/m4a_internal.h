@@ -361,8 +361,8 @@ struct Song
     u16 me;
 } ALIGNED(8);
 
-extern const struct MusicPlayer gMPlayTable[];
-extern const struct Song gSongTable[];
+extern struct MusicPlayer gMPlayTable[];
+extern struct Song gSongTable[];
 
 
 
