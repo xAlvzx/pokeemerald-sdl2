@@ -4,6 +4,8 @@
 	.include "asm/macros.inc"
 	.include "constants/constants.inc"
 
+#ifndef PORTABLE
+
 	.equiv GCMB_STRUCT_COUNTER1,            0x00
 	.equiv GCMB_STRUCT_COUNTER2,            0x01
 	.equiv GCMB_STRUCT_MBPROGRESS,          0x02
@@ -639,3 +641,4 @@ pool_RubyUSAGameCode: .ascii "AXVE"
 pool_MultiBootLoadAddr: .int EWRAM_START
 
 	.balign 4, 0 @ Don't pad with nop.
+#endif // PORTABLE

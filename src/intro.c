@@ -1061,7 +1061,9 @@ static void LoadCopyrightGraphics(u16 tilesetAddress, u16 tilemapAddress, u16 pa
 
 static void SerialCB_CopyrightScreen(void)
 {
+#ifndef PORTABLE
     GameCubeMultiBoot_HandleSerialInterrupt(&gMultibootProgramStruct);
+#endif
 }
 
 static u8 SetUpCopyrightScreen(void)
@@ -1092,16 +1094,22 @@ static u8 SetUpCopyrightScreen(void)
         EnableInterrupts(INTR_FLAG_VBLANK);
         SetVBlankCallback(VBlankCB_Intro);
         SetSerialCallback(SerialCB_CopyrightScreen);
+#ifndef PORTABLE
         GameCubeMultiBoot_Init(&gMultibootProgramStruct);
+#endif
         SetBorder(GAME_BORDER_EMERALD);
         DisableBorder();
     default:
         UpdatePaletteFade();
         gMain.state++;
+#ifndef PORTABLE
         GameCubeMultiBoot_Main(&gMultibootProgramStruct);
+#endif
         break;
     case 140:
+#ifndef PORTABLE
         GameCubeMultiBoot_Main(&gMultibootProgramStruct);
+#endif
         if (gMultibootProgramStruct.gcmb_field_2 != 1)
         {
             BeginNormalPaletteFade(PALETTES_ALL, 0, 0, 16, RGB_BLACK);
@@ -1125,12 +1133,16 @@ static u8 SetUpCopyrightScreen(void)
                     *(u32 *)(EWRAM_START + 0xAC) = COLOSSEUM_GAME_CODE;
                 }
 #endif
+#ifndef PORTABLE
                 GameCubeMultiBoot_ExecuteProgram(&gMultibootProgramStruct);
+#endif
             }
         }
         else
         {
+#ifndef PORTABLE
             GameCubeMultiBoot_Quit();
+#endif
             SetSerialCallback(SerialCB);
         }
         return 0;

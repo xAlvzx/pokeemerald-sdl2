@@ -175,7 +175,7 @@ $(MID_BUILDDIR)/%.o: $(MID_SUBDIR)/%.s
 define ASM_DEP
 $1: $2
 	@echo "Assembling $<..."
-	@$(PREPROC) $$< charmap.txt | $(CC) -E -I include - | $(ASM_PSEUDO_OP_CONV) | $(CC) $(CFLAGS) -x assembler - -c -o $$@
+	@$(PREPROC) $$< charmap.txt | $(CC) $(CFLAGS) -E -I include - | $(ASM_PSEUDO_OP_CONV) | $(CC) $(CFLAGS) -x assembler - -c -o $$@
 endef
 
 %.s: ;

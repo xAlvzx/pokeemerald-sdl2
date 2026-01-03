@@ -1,4 +1,4 @@
-	.balign 4
+	.balign 8
 
 gSongTable::
 	song mus_dummy, 0, 0

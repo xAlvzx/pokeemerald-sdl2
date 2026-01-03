@@ -1,5 +1,7 @@
 	.include "constants/gba_constants.inc"
 
+#ifndef PORTABLE
+
 	.syntax unified
 
 	.arm
@@ -124,3 +126,4 @@ IntrMain_RetAddr:
 	.pool
 
 	.balign 4, 0 @ Don't pad with nop.
+#endif // PORTABLE

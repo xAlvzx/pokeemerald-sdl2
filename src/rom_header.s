@@ -1,6 +1,8 @@
 @ Note: ROM header data is empty space here.
 @ It's populated by gbafix using data provided in the Makefile.
 
+#ifndef PORTABLE
+
 Start::
 	b Init
 
@@ -51,3 +53,4 @@ GPIOPortReadEnable::
 	.2byte 0
 
 	.space 0x34
+#endif // PORTABLE
