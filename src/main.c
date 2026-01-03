@@ -43,7 +43,7 @@ u8 gHeap[HEAP_SIZE];
 
 u16 gKeyRepeatStartDelay;
 bool8 gLinkTransferringData;
-struct Main gMain;
+struct Main gMain __attribute__ ((aligned (8)));
 u16 gKeyRepeatContinueDelay;
 bool8 gSoftResetDisabled;
 u8 gLinkVSyncDisabled;
@@ -85,19 +85,19 @@ void GameInit(void)
     REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
     InitKeys();
     InitIntrHandlers();
-    // m4aSoundInit(); // DEBUG: Disabled to prevent crash (High memory usage)
+    // m4aSoundInit();
 #ifndef PORTABLE
     InitRFU();
 #endif
     RtcInit();
     CheckForFlashMemory();
-    // InitMainCallbacks(); // DEBUG: Disabled to prevent crash (High memory usage)
+    InitMainCallbacks();
     InitMapMusic();
 #ifdef BUGFIX
     SeedRngWithRtc(); 
 #endif
     ResetBgs();
-    SetDefaultFontsPointer(); // DEBUG: Disabled to prevent crash (High memory usage)
+    // SetDefaultFontsPointer(); 
 
     InitHeap();
 
@@ -167,13 +167,15 @@ static void UpdateLinkAndCallCallbacks(void)
         CallCallbacks();
 }
 
+static void DummyCallback(void) {}
+
 static void InitMainCallbacks(void)
 {
     gMain.vblankCounter1 = 0;
     gTrainerHillVBlankCounter = NULL;
     gMain.vblankCounter2 = 0;
     gMain.callback1 = NULL;
-    SetMainCallback2(CB2_InitCopyrightScreenAfterBootup);
+    SetMainCallback2(DummyCallback);
     gSaveBlock2Ptr = &gSaveblock2.block;
     gPokemonStoragePtr = &gPokemonStorage.block;
 }
