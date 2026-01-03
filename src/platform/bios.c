@@ -1,12 +1,12 @@
 #include "global.h"
 // BIOS function implementations are based on the VBA-M source code.
 
-//memory defines here because there's no better spot for them
-u16 INTR_CHECK;
-void *INTR_VECTOR;
-unsigned char REG_BASE[0x400] __attribute__ ((aligned (4)));
-unsigned char FLASH_BASE[131072*4] __attribute__ ((aligned (4))); //base gba flash_base multiplied by 8 for extra storage
-struct SoundInfo *SOUND_INFO_PTR;
+// memory defines here because there's no better spot for them
+u16 INTR_CHECK __attribute__ ((aligned (8)));
+void *INTR_VECTOR __attribute__ ((aligned (8)));
+unsigned char REG_BASE[0x400] __attribute__ ((aligned (8)));
+unsigned char FLASH_BASE[131072*4] __attribute__ ((aligned (8))); //base gba flash_base multiplied by 8 for extra storage
+struct SoundInfo *SOUND_INFO_PTR __attribute__ ((aligned (8)));
 
 static uint32_t CPUReadMemory(const void *src)
 {

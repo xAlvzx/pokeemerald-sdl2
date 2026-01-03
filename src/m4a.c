@@ -7,20 +7,20 @@
 extern const u8 gCgb3Vol[];
 
 struct SoundInfo gSoundInfo ALIGNED(8);
-struct PokemonCrySong gPokemonCrySongs[MAX_POKEMON_CRIES];
-struct MusicPlayerInfo gPokemonCryMusicPlayers[MAX_POKEMON_CRIES];
-struct CgbChannel gCgbChans[4];
-struct MusicPlayerTrack gPokemonCryTracks[MAX_POKEMON_CRIES * 2];
-struct PokemonCrySong gPokemonCrySong;
-struct MusicPlayerInfo gMPlayInfo_BGM;
-struct MusicPlayerInfo gMPlayInfo_SE1;
-struct MusicPlayerInfo gMPlayInfo_SE2;
-struct MusicPlayerInfo gMPlayInfo_SE3;
-struct MusicPlayerTrack gMPlayTrack_BGM[10];
-struct MusicPlayerTrack gMPlayTrack_SE1[3];
-struct MusicPlayerTrack gMPlayTrack_SE2[9];
-struct MusicPlayerTrack gMPlayTrack_SE3[1];
-u8 gMPlayMemAccArea[0x10];
+struct PokemonCrySong gPokemonCrySongs[MAX_POKEMON_CRIES] ALIGNED(8);
+struct MusicPlayerInfo gPokemonCryMusicPlayers[MAX_POKEMON_CRIES] ALIGNED(8);
+struct CgbChannel gCgbChans[4] ALIGNED(8);
+struct MusicPlayerTrack gPokemonCryTracks[MAX_POKEMON_CRIES * 2] ALIGNED(8);
+struct PokemonCrySong gPokemonCrySong ALIGNED(8);
+struct MusicPlayerInfo gMPlayInfo_BGM ALIGNED(8);
+struct MusicPlayerInfo gMPlayInfo_SE1 ALIGNED(8);
+struct MusicPlayerInfo gMPlayInfo_SE2 ALIGNED(8);
+struct MusicPlayerInfo gMPlayInfo_SE3 ALIGNED(8);
+struct MusicPlayerTrack gMPlayTrack_BGM[10] ALIGNED(8);
+struct MusicPlayerTrack gMPlayTrack_SE1[3] ALIGNED(8);
+struct MusicPlayerTrack gMPlayTrack_SE2[9] ALIGNED(8);
+struct MusicPlayerTrack gMPlayTrack_SE3[1] ALIGNED(8);
+u8 gMPlayMemAccArea[0x10] ALIGNED(8);
 
 MPlayFunc gMPlayJumpTable[36] = {
     (MPlayFunc)MP2K_event_fine,

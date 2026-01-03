@@ -13,17 +13,17 @@
 struct SaveBlock2ASLR {
     struct SaveBlock2 block;
     u8 aslr[SAVEBLOCK_MOVE_RANGE];
-};
+} ALIGNED(8);
 
 struct SaveBlock1ASLR {
     struct SaveBlock1 block;
     u8 aslr[SAVEBLOCK_MOVE_RANGE];
-};
+} ALIGNED(8);
 
 struct PokemonStorageASLR {
     struct PokemonStorage block;
     u8 aslr[SAVEBLOCK_MOVE_RANGE];
-};
+} ALIGNED(8);
 
 extern struct SaveBlock1ASLR gSaveblock1;
 extern struct SaveBlock2ASLR gSaveblock2;

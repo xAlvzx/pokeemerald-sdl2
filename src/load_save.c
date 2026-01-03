@@ -37,10 +37,10 @@ EWRAM_DATA struct LoadedSaveData gLoadedSaveData = {0};
 EWRAM_DATA u32 gLastEncryptionKey = 0;
 
 // IWRAM common
-bool32 gFlashMemoryPresent;
-struct SaveBlock1 *gSaveBlock1Ptr;
-struct SaveBlock2 *gSaveBlock2Ptr;
-struct PokemonStorage *gPokemonStoragePtr;
+bool32 gFlashMemoryPresent __attribute__ ((aligned (8)));
+struct SaveBlock1 *gSaveBlock1Ptr __attribute__ ((aligned (8)));
+struct SaveBlock2 *gSaveBlock2Ptr __attribute__ ((aligned (8)));
+struct PokemonStorage *gPokemonStoragePtr __attribute__ ((aligned (8)));
 
 // code
 void CheckForFlashMemory(void)

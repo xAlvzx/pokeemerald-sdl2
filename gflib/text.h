@@ -105,7 +105,7 @@ struct FontInfo
     u8 fgColor:4;
     u8 bgColor:4;
     u8 shadowColor:4;
-};
+} ALIGNED(8);
 
 extern const struct FontInfo *gFonts;
 
