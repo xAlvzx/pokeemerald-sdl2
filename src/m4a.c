@@ -22,44 +22,47 @@ struct MusicPlayerTrack gMPlayTrack_SE2[9] ALIGNED(8);
 struct MusicPlayerTrack gMPlayTrack_SE3[1] ALIGNED(8);
 u8 gMPlayMemAccArea[0x10] ALIGNED(8);
 
-MPlayFunc gMPlayJumpTable[36] = {
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_goto,
-    (MPlayFunc)MP2K_event_patt,
-    (MPlayFunc)MP2K_event_pend,
-    (MPlayFunc)MP2K_event_rept,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)ply_memacc, // was MP2K_event_fine
-    (MPlayFunc)MP2K_event_prio,
-    (MPlayFunc)MP2K_event_tempo,
-    (MPlayFunc)MP2K_event_keysh,
-    (MPlayFunc)MP2K_event_voice,
-    (MPlayFunc)MP2K_event_vol,
-    (MPlayFunc)MP2K_event_pan,
-    (MPlayFunc)MP2K_event_bend,
-    (MPlayFunc)MP2K_event_bendr,
-    (MPlayFunc)MP2K_event_lfos,
-    (MPlayFunc)MP2K_event_lfodl,
-    (MPlayFunc)MP2K_event_mod,
-    (MPlayFunc)MP2K_event_modt,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_tune,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_fine,
-    (MPlayFunc)MP2K_event_port,
-    (MPlayFunc)ply_xcmd, // was MP2K_event_fine
-    (MPlayFunc)MP2K_event_endtie,
-    (MPlayFunc)SampleFreqSet,
-    (MPlayFunc)TrackStop,
-    (MPlayFunc)FadeOutBody,
-    (MPlayFunc)TrkVolPitSet,
-    (MPlayFunc)MP2KClearChain,
-    (MPlayFunc)SoundMainBTM
-};
+MPlayFunc gMPlayJumpTable[36] ALIGNED(8);
+
+static void InitMPlayJumpTable(void)
+{
+    gMPlayJumpTable[0] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[1] = (MPlayFunc)MP2K_event_goto;
+    gMPlayJumpTable[2] = (MPlayFunc)MP2K_event_patt;
+    gMPlayJumpTable[3] = (MPlayFunc)MP2K_event_pend;
+    gMPlayJumpTable[4] = (MPlayFunc)MP2K_event_rept;
+    gMPlayJumpTable[5] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[6] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[7] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[8] = (MPlayFunc)ply_memacc;
+    gMPlayJumpTable[9] = (MPlayFunc)MP2K_event_prio;
+    gMPlayJumpTable[10] = (MPlayFunc)MP2K_event_tempo;
+    gMPlayJumpTable[11] = (MPlayFunc)MP2K_event_keysh;
+    gMPlayJumpTable[12] = (MPlayFunc)MP2K_event_voice;
+    gMPlayJumpTable[13] = (MPlayFunc)MP2K_event_vol;
+    gMPlayJumpTable[14] = (MPlayFunc)MP2K_event_pan;
+    gMPlayJumpTable[15] = (MPlayFunc)MP2K_event_bend;
+    gMPlayJumpTable[16] = (MPlayFunc)MP2K_event_bendr;
+    gMPlayJumpTable[17] = (MPlayFunc)MP2K_event_lfos;
+    gMPlayJumpTable[18] = (MPlayFunc)MP2K_event_lfodl;
+    gMPlayJumpTable[19] = (MPlayFunc)MP2K_event_mod;
+    gMPlayJumpTable[20] = (MPlayFunc)MP2K_event_modt;
+    gMPlayJumpTable[21] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[22] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[23] = (MPlayFunc)MP2K_event_tune;
+    gMPlayJumpTable[24] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[25] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[26] = (MPlayFunc)MP2K_event_fine;
+    gMPlayJumpTable[27] = (MPlayFunc)MP2K_event_port;
+    gMPlayJumpTable[28] = (MPlayFunc)ply_xcmd;
+    gMPlayJumpTable[29] = (MPlayFunc)MP2K_event_endtie;
+    gMPlayJumpTable[30] = (MPlayFunc)SampleFreqSet;
+    gMPlayJumpTable[31] = (MPlayFunc)TrackStop;
+    gMPlayJumpTable[32] = (MPlayFunc)FadeOutBody;
+    gMPlayJumpTable[33] = (MPlayFunc)TrkVolPitSet;
+    gMPlayJumpTable[34] = (MPlayFunc)MP2KClearChain;
+    gMPlayJumpTable[35] = (MPlayFunc)SoundMainBTM;
+}
 
 #ifdef PORTABLE
 void SoundMain(void)
@@ -97,6 +100,7 @@ void MPlayFadeOut(struct MusicPlayerInfo *mplayInfo, u16 speed)
 
 void m4aSoundInit(void)
 {
+    InitMPlayJumpTable();
     s32 i;
 
     SoundInit(&gSoundInfo);

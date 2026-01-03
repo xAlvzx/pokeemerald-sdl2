@@ -1540,112 +1540,116 @@ u8 GetKeypadIconHeight(u8 keypadIconId)
     return sKeypadIcons[keypadIconId].height;
 }
 
-static const struct FontInfo sFontInfos[] =
+// Non-const static array initialized at runtime
+// to avoid relocation issues on Switch.
+static struct FontInfo sFontInfos[10] ALIGNED(8);
+
+static void InitFontInfos(void)
 {
-    [FONT_SMALL] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 5,
-        .maxLetterHeight = 12,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_NORMAL] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 6,
-        .maxLetterHeight = 16,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_SHORT] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 6,
-        .maxLetterHeight = 14,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_SHORT_COPY_1] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 6,
-        .maxLetterHeight =  14,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_SHORT_COPY_2] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 6,
-        .maxLetterHeight =  14,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_SHORT_COPY_3] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 6,
-        .maxLetterHeight =  14,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_BRAILLE] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 8,
-        .maxLetterHeight = 16,
-        .letterSpacing = 0,
-        .lineSpacing = 8,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_NARROW] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 5,
-        .maxLetterHeight = 16,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_SMALL_NARROW] = {
-        .fontFunction = NULL, // NULL for testing
-        .maxLetterWidth = 5,
-        .maxLetterHeight = 8,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 2,
-        .bgColor = 1,
-        .shadowColor = 3,
-    },
-    [FONT_BOLD] = {
-        .fontFunction = NULL,
-        .maxLetterWidth = 8,
-        .maxLetterHeight = 8,
-        .letterSpacing = 0,
-        .lineSpacing = 0,
-        .fgColor = 1,
-        .bgColor = 2,
-        .shadowColor = 15,
-    }
-};
+    // FONT_SMALL
+    sFontInfos[FONT_SMALL].fontFunction = FontFunc_Small;
+    sFontInfos[FONT_SMALL].maxLetterWidth = 5;
+    sFontInfos[FONT_SMALL].maxLetterHeight = 12;
+    sFontInfos[FONT_SMALL].letterSpacing = 0;
+    sFontInfos[FONT_SMALL].lineSpacing = 0;
+    sFontInfos[FONT_SMALL].fgColor = 2;
+    sFontInfos[FONT_SMALL].bgColor = 1;
+    sFontInfos[FONT_SMALL].shadowColor = 3;
+
+    // FONT_NORMAL
+    sFontInfos[FONT_NORMAL].fontFunction = FontFunc_Normal;
+    sFontInfos[FONT_NORMAL].maxLetterWidth = 6;
+    sFontInfos[FONT_NORMAL].maxLetterHeight = 16;
+    sFontInfos[FONT_NORMAL].letterSpacing = 0;
+    sFontInfos[FONT_NORMAL].lineSpacing = 0;
+    sFontInfos[FONT_NORMAL].fgColor = 2;
+    sFontInfos[FONT_NORMAL].bgColor = 1;
+    sFontInfos[FONT_NORMAL].shadowColor = 3;
+
+    // FONT_SHORT
+    sFontInfos[FONT_SHORT].fontFunction = FontFunc_Short;
+    sFontInfos[FONT_SHORT].maxLetterWidth = 6;
+    sFontInfos[FONT_SHORT].maxLetterHeight = 14;
+    sFontInfos[FONT_SHORT].letterSpacing = 0;
+    sFontInfos[FONT_SHORT].lineSpacing = 0;
+    sFontInfos[FONT_SHORT].fgColor = 2;
+    sFontInfos[FONT_SHORT].bgColor = 1;
+    sFontInfos[FONT_SHORT].shadowColor = 3;
+
+    // FONT_SHORT_COPY_1
+    sFontInfos[FONT_SHORT_COPY_1].fontFunction = FontFunc_ShortCopy1;
+    sFontInfos[FONT_SHORT_COPY_1].maxLetterWidth = 6;
+    sFontInfos[FONT_SHORT_COPY_1].maxLetterHeight = 14;
+    sFontInfos[FONT_SHORT_COPY_1].letterSpacing = 0;
+    sFontInfos[FONT_SHORT_COPY_1].lineSpacing = 0;
+    sFontInfos[FONT_SHORT_COPY_1].fgColor = 2;
+    sFontInfos[FONT_SHORT_COPY_1].bgColor = 1;
+    sFontInfos[FONT_SHORT_COPY_1].shadowColor = 3;
+
+    // FONT_SHORT_COPY_2
+    sFontInfos[FONT_SHORT_COPY_2].fontFunction = FontFunc_ShortCopy2;
+    sFontInfos[FONT_SHORT_COPY_2].maxLetterWidth = 6;
+    sFontInfos[FONT_SHORT_COPY_2].maxLetterHeight = 14;
+    sFontInfos[FONT_SHORT_COPY_2].letterSpacing = 0;
+    sFontInfos[FONT_SHORT_COPY_2].lineSpacing = 0;
+    sFontInfos[FONT_SHORT_COPY_2].fgColor = 2;
+    sFontInfos[FONT_SHORT_COPY_2].bgColor = 1;
+    sFontInfos[FONT_SHORT_COPY_2].shadowColor = 3;
+
+    // FONT_SHORT_COPY_3
+    sFontInfos[FONT_SHORT_COPY_3].fontFunction = FontFunc_ShortCopy3;
+    sFontInfos[FONT_SHORT_COPY_3].maxLetterWidth = 6;
+    sFontInfos[FONT_SHORT_COPY_3].maxLetterHeight = 14;
+    sFontInfos[FONT_SHORT_COPY_3].letterSpacing = 0;
+    sFontInfos[FONT_SHORT_COPY_3].lineSpacing = 0;
+    sFontInfos[FONT_SHORT_COPY_3].fgColor = 2;
+    sFontInfos[FONT_SHORT_COPY_3].bgColor = 1;
+    sFontInfos[FONT_SHORT_COPY_3].shadowColor = 3;
+
+    // FONT_BRAILLE
+    sFontInfos[FONT_BRAILLE].fontFunction = FontFunc_Braille;
+    sFontInfos[FONT_BRAILLE].maxLetterWidth = 8;
+    sFontInfos[FONT_BRAILLE].maxLetterHeight = 16;
+    sFontInfos[FONT_BRAILLE].letterSpacing = 0;
+    sFontInfos[FONT_BRAILLE].lineSpacing = 8;
+    sFontInfos[FONT_BRAILLE].fgColor = 2;
+    sFontInfos[FONT_BRAILLE].bgColor = 1;
+    sFontInfos[FONT_BRAILLE].shadowColor = 3;
+
+    // FONT_NARROW
+    sFontInfos[FONT_NARROW].fontFunction = FontFunc_Narrow;
+    sFontInfos[FONT_NARROW].maxLetterWidth = 5;
+    sFontInfos[FONT_NARROW].maxLetterHeight = 16;
+    sFontInfos[FONT_NARROW].letterSpacing = 0;
+    sFontInfos[FONT_NARROW].lineSpacing = 0;
+    sFontInfos[FONT_NARROW].fgColor = 2;
+    sFontInfos[FONT_NARROW].bgColor = 1;
+    sFontInfos[FONT_NARROW].shadowColor = 3;
+
+    // FONT_SMALL_NARROW
+    sFontInfos[FONT_SMALL_NARROW].fontFunction = FontFunc_SmallNarrow;
+    sFontInfos[FONT_SMALL_NARROW].maxLetterWidth = 5;
+    sFontInfos[FONT_SMALL_NARROW].maxLetterHeight = 8;
+    sFontInfos[FONT_SMALL_NARROW].letterSpacing = 0;
+    sFontInfos[FONT_SMALL_NARROW].lineSpacing = 0;
+    sFontInfos[FONT_SMALL_NARROW].fgColor = 2;
+    sFontInfos[FONT_SMALL_NARROW].bgColor = 1;
+    sFontInfos[FONT_SMALL_NARROW].shadowColor = 3;
+
+    // FONT_BOLD
+    sFontInfos[FONT_BOLD].fontFunction = NULL;
+    sFontInfos[FONT_BOLD].maxLetterWidth = 8;
+    sFontInfos[FONT_BOLD].maxLetterHeight = 8;
+    sFontInfos[FONT_BOLD].letterSpacing = 0;
+    sFontInfos[FONT_BOLD].lineSpacing = 0;
+    sFontInfos[FONT_BOLD].fgColor = 1;
+    sFontInfos[FONT_BOLD].bgColor = 2;
+    sFontInfos[FONT_BOLD].shadowColor = 15;
+}
 
 void SetDefaultFontsPointer(void)
 {
+    InitFontInfos();
     SetFontsPointer(sFontInfos);
 }
 

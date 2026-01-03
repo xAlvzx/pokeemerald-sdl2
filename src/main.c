@@ -85,7 +85,7 @@ void GameInit(void)
     REG_WAITCNT = WAITCNT_PREFETCH_ENABLE | WAITCNT_WS0_S_1 | WAITCNT_WS0_N_3;
     InitKeys();
     InitIntrHandlers();
-    // m4aSoundInit();
+    m4aSoundInit();
 #ifndef PORTABLE
     InitRFU();
 #endif
@@ -97,7 +97,7 @@ void GameInit(void)
     SeedRngWithRtc(); 
 #endif
     ResetBgs();
-    // SetDefaultFontsPointer(); 
+    SetDefaultFontsPointer(); 
 
     InitHeap();
 
@@ -167,15 +167,13 @@ static void UpdateLinkAndCallCallbacks(void)
         CallCallbacks();
 }
 
-static void DummyCallback(void) {}
-
 static void InitMainCallbacks(void)
 {
     gMain.vblankCounter1 = 0;
     gTrainerHillVBlankCounter = NULL;
     gMain.vblankCounter2 = 0;
     gMain.callback1 = NULL;
-    SetMainCallback2(DummyCallback);
+    SetMainCallback2(CB2_InitCopyrightScreenAfterBootup);
     gSaveBlock2Ptr = &gSaveblock2.block;
     gPokemonStoragePtr = &gPokemonStorage.block;
 }

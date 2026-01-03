@@ -352,14 +352,14 @@ struct MusicPlayer
     struct MusicPlayerTrack *track;
     u8 numTracks;
     u16 unk_A;
-};
+} ALIGNED(8);
 
 struct Song
 {
     struct SongHeader *header;
     u16 ms;
     u16 me;
-};
+} ALIGNED(8);
 
 extern const struct MusicPlayer gMPlayTable[];
 extern const struct Song gSongTable[];
